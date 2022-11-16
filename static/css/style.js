@@ -18,27 +18,50 @@ function generateTable(){
         if(localStorage.showOld == 'true' && posts[e].hatarido_kod < Date.now()/1000){
             console.log('régi')
             document.getElementById('tbody').innerHTML = document.getElementById('tbody').innerHTML +
-            `<td>${posts[e].id}</td>
-            <td>${posts[e].leiras}</td>
-            <td>${posts[e].hatarido}</td>
-            <td>${dlIcon}</td>
+            `
+            <tr class="tr">
+            <td><p>${posts[e].id}</p></td>
+            <td><p>${posts[e].leiras}</p></td>
+            <td><p>${posts[e].hatarido}</p></td>
+            <td><p>${dlIcon}</p></td>
             <td><i onclick="openDelPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-trash-can"></i></td>
             <td><i onclick="openEditPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-pen"></i></td>
+            </tr>
             `
         } else if(posts[e].hatarido_kod > Date.now()/1000){
             console.log('csak új')
             document.getElementById('tbody').innerHTML = document.getElementById('tbody').innerHTML +
-            `<td>${posts[e].id}</td>
-            <td>${posts[e].leiras}</td>
-            <td>${posts[e].hatarido}</td>
-            <td>${dlIcon}</td>
+            `
+            <tr class="tr">
+            <td><p>${posts[e].id}</p></td>
+            <td><p>${posts[e].leiras}</p></td>
+            <td><p>${posts[e].hatarido}</p></td>
+            <td><p>${dlIcon}</p></td>
             <td><i onclick="openDelPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-trash-can"></i></td>
             <td><i onclick="openEditPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-pen"></i></td>
+            </tr>
             `
+
         }
 
-    }
         
+
+    }
+    
+    trs = document.getElementsByClassName('tr')
+   
+    
+    for(i=0;i<trs.length;i++){
+        trs[i].addEventListener('mousemove', (e) =>{
+            x = e.clientX - e.target.closest('.tr').getBoundingClientRect().left
+            y = e.clientY - e.target.closest('.tr').getBoundingClientRect().top
+            
+            root = document.querySelector(':root')
+            root.style.setProperty('--mx', x+'px')
+            root.style.setProperty('--my', y+'px')
+        })
+    }
+    
     })
 
 }
@@ -79,12 +102,14 @@ function theme(){
         })
         root.style.setProperty('--bg-active', getComputedStyle(root).getPropertyValue('--dark'))
         root.style.setProperty('--text-active', 'rgb(255,255,255)')
+        root.style.setProperty('--glow', 'rgba(255,255,255,0.2)')
     } else{
         Array.prototype.forEach.call(tables, (e)=>{
             e.classList.remove('table-dark')
         })
         root.style.setProperty('--bg-active', getComputedStyle(root).getPropertyValue('--light'))
         root.style.setProperty('--text-active', 'rgb(0,0,0)')
+        root.style.setProperty('--glow', 'rgba(180,180,180,0.45)')
     }
     
 }
@@ -143,16 +168,4 @@ function closeEditPopup(){
     document.getElementById('editPopup').close()
 }
 
-trs = document.getElementsByTagName('tr')
 
-for(i = 0; i < trs.length; i++){
-    trs[i].addEventListener(
-        "mousemove", (e)=>{
-        x = e.offsetX;
-        y = e.offsetY;
-        root = document.querySelector(':root')
-        root.style.setProperty('--mx', x)
-        root.style.setProperty('--my', y)
-        console.log(x,y)
-    })
-}

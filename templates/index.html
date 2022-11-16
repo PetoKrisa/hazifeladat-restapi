@@ -67,25 +67,24 @@
 
 
     <br>
-    <div class="container">
+    <div class="container w-100">
         <!--"navbar"-->
         <div id="navbar" class="container-fluid">
             <p class="pointer float-start text-decoration-underline" onclick="openUploadPopup()">Hozzáadás</p>
-            <p class="float-start">&nbsp;&#x2022;&nbsp;</p>
+            <p class="float-start nav-space">&nbsp;&#x2022;&nbsp;</p>
             <p class="float-start" id="postCounter"></p>
-            <p class="float-start">&nbsp;&#x2022;&nbsp;</p>
+            <p class="float-start nav-space">&nbsp;&#x2022;&nbsp;</p>
 
             <input id="visibility" type="checkbox" class="form-check-input pointer float-start text-decoration-underline" value="on" onclick="changeVisibility(this)">
-            <label for="visibility" class="form-check-label">&nbsp;Lejárt határidő mutatása</label>
-
-            <i onclick="setTheme()" class="fa-sharp fa-solid fa-circle-half-stroke float-end"></i>
+            <label for="visibility" class="form-check-label">&nbsp;Lejárt</label>
+            <i onclick="setTheme()" style="float: right !important;" class="fa-sharp fa-solid fa-circle-half-stroke float-end"></i>
         </div>
 
        
         <!--body-->
         <table class="table table-hover table-striped table-unbordered">
             <thead class="thead-dark">
-                <tr>
+                <tr class="trh">
                     <th>ID</th>
                     <th style="width: 100%;">Leírás</th>
                     <th>Határidő&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
@@ -95,16 +94,19 @@
                 </tr>   
             </thead>
             <tbody id="tbody">
-                <!--<tr class="w-auto">
-                    <td>1</td>
-                    <td>szoveg</td>
-                    <td>2022-11-15</td>
+                <!--<tr class="tr w-auto">
+                    <td><p>1</p></td>
+                    <td><p>szoveg</p></td>
+                    <td><p>2022-11-15</p></td>
                     <td><i onclick="download(this)" data-id="id" class="fa-solid fa-download"></i></td>
                     <td><i onclick="openDelPopup(this)" data-id="id" class="fa-solid fa-trash-can"></i></td>
                     <td><i onclick="openEditPopup(this)" data-id="id" class="fa-solid fa-pen"></i></td>
                 </tr>-->
             </tbody>
         </table>
+
+        <div class="kocka">
+        </div>
     </div>
     <script src="../static/css/style.js"></script>
 </body>
