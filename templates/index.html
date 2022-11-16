@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../static/css/bootstrap.css">
+    <link rel="stylesheet" href="../static/css/style.css">
+    <title>Házi</title>
+</head>
+<body>
+    <!--upload popup-->
+    <dialog id="uploadPopup" class="">
+        <form action="/api/posts/upload" method="post" enctype="multipart/form-data" id="uploadForm" class="needs-validation">
+            <h4>Feltöltés</h4>
+        
+            <label class="form-label" for="leiras">Leírás: </label>
+            <textarea  class="form-control" name="leiras" id="leiras" cols="45" rows="5" required></textarea>
+            <br>
+            <label class="form-label" for="hatarido">Határidő: </label>
+            <input  class="form-control" type="date" name="hatarido" id="hatarido" required>
+            <hr>
+            <label class="form-label" for="file">Csatolt file (nem kötelező): </label>
+            <input class="form-control" type="file" name="file" id="file">
+
+            <br>
+            <button class="btn btn-danger" onclick="closeUploadPopup()">Mégse</button>
+            <input type="submit" value="Kész" class="btn btn-success">
+        </form>
+    
+        
+    </dialog>
+
+    <!--delete popup-->
+    <dialog id="deletePopup">
+        <div class="card-body">
+            <h4 class="card-title">Törlés</h4>
+            <p class="card-teyt">Biztosan törlöd?</p>
+            <button class="btn btn-danger" onclick="closeDelPopup()">Nem</button>
+            <button class="btn btn-success" id="delBtn" onclick="del(this)">Igen</button>
+        </div>
+    </dialog>
+
+    <!--edit popup-->
+    <dialog id="editPopup" class="">
+        <form action="/api/posts/edit" method="post" enctype="multipart/form-data" id="uploadForm" class="needs-validation">
+            <h4>Szerkesztés</h4>
+        
+            <label class="form-label" for="leiras">Leírás: </label>
+            <textarea  class="form-control" name="eleiras" id="eleiras" cols="45" rows="5" required></textarea>
+            <br>
+            <label class="form-label" for="hatarido">Határidő: </label>
+            <input  class="form-control" type="date" name="ehatarido" id="ehatarido" required>
+            <hr>
+            <input class="form-check-input" type="checkbox" value="on" name="deleteFile" id="deleteFile">
+            <label class="form-check-label" for="deleteFile">File Törlése</label>
+            <label class="form-label" for="efile">Csatolt file (nem kötelező): </label>
+            <input class="form-control" type="file" name="efile" id="efile">
+            <input type="number" readonly id="eid" name="eid" style="overflow: none; height: 0px; user-select:none; opacity: 0; cursor: default;">
+            <br>
+            <button class="btn btn-danger" onclick="closeEditPopup()">Mégse</button>
+            <input id="editBtn" type="submit" value="Kész" class="btn btn-success">
+        </form>    
+    </dialog>
+
+
+    <br>
+    <div class="container">
+        <!--"navbar"-->
+        <div id="navbar" class="container-fluid">
+            <p class="pointer float-start text-decoration-underline" onclick="openUploadPopup()">Hozzáadás</p>
+            <p class="float-start">&nbsp;&#x2022;&nbsp;</p>
+            <p class="float-start" id="postCounter"></p>
+            <p class="float-start">&nbsp;&#x2022;&nbsp;</p>
+
+            <input id="visibility" type="checkbox" class="form-check-input pointer float-start text-decoration-underline" value="on" onclick="changeVisibility(this)">
+            <label for="visibility" class="form-check-label">Lejárt határidő mutatása</label>
+
+            <i onclick="setTheme()" class="fa-sharp fa-solid fa-circle-half-stroke float-end"></i>
+        </div>
+
+       
+        <!--body-->
+        <table class="table table-hover table-striped table-unbordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Leírás</th>
+                    <th>Határidő&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+                    <th>&nbsp;</th>
+                    <th>&nbsp;</th>
+                    <th>&nbsp;</th>
+                </tr>   
+            </thead>
+            <tbody id="tbody">
+                <!--<tr class="w-auto">
+                    <td>1</td>
+                    <td>szoveg</td>
+                    <td>2022-11-15</td>
+                    <td><i onclick="download(this)" data-id="id" class="fa-solid fa-download"></i></td>
+                    <td><i onclick="openDelPopup(this)" data-id="id" class="fa-solid fa-trash-can"></i></td>
+                    <td><i onclick="openEditPopup(this)" data-id="id" class="fa-solid fa-pen"></i></td>
+                </tr>-->
+            </tbody>
+        </table>
+    </div>
+    <script src="../static/css/style.js"></script>
+</body>
+
+
+
+
+<script src="https://kit.fontawesome.com/e2b9ce2b9c.js" crossorigin="anonymous"></script>
+</html>

@@ -1,0 +1,75 @@
+:root{
+    --dark: rgb(44,48,52);
+    --light: rgb(235, 235, 235);
+    --bg-active: rgb(235, 235, 235);
+    --text-active: black;
+}
+
+body,html{
+    scroll-behavior: smooth;
+    width: 100vw;
+    height: 100vh;
+}
+
+body{
+    background-color: var(--bg-active);
+    color: var(--text-active) !important;
+}
+
+td{
+    word-break: break-all;
+}
+
+#navbar, br{
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+}
+
+
+i{
+    cursor: pointer;
+}
+
+.transition {
+    transition: 200ms;
+}
+
+
+.pointer{
+    cursor: pointer;
+}
+
+dialog::backdrop{
+    background-color: rgba(0, 0, 0, 0.4);
+    animation: fade-in 700ms;
+}
+
+dialog{
+    border: none;
+    animation: fade-in 700ms;
+    background-color: var(--bg-active) !important;
+    color: var(--text-active);
+    border-radius: 6px;
+}
+
+dialog button{
+    border: none;
+}
+
+textarea{
+    width: 100%;
+}
+p, i{
+    transition: none !important;
+}
+
+@keyframes fade-in{
+    from{
+        opacity: 0;
+    }
+
+    to{
+        opacity: 1;
+    }
+}
