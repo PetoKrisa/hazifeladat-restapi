@@ -45,7 +45,6 @@ class Posts(db.Model):
 
 @app.before_request
 def tokenGenerator():
-
     if 'token' not in session.keys():
         session['token'] = f'{randint(1000,9999)}-{randint(1000,9999)}'
 
@@ -149,6 +148,7 @@ def apiPostsEdit():
     hatarido_kod = hatarido.timestamp()+89580 #23:59
     
     id = request.form['eid']
+    
     file = request.files['efile']
     file_name = file.filename
     file_mimetype = file.mimetype
@@ -158,26 +158,42 @@ def apiPostsEdit():
     except:
         deleteFile = 'off'
     
-    if len(file_name) == 0 or deleteFile == 'on':
+    if len(file_name)==0 or deleteFile == 'on':
         file = None
         file_name = None
         file_mimetype = None
+        
     if deleteFile == 'on':
         try:
             shutil.rmtree(f'{filePath}\\static\\uploads\\{id}')
         except:
             pass
+        
+    if file != None:
+        try:
+            os.mkdir(f"{filePath}\\static\\uploads\\{id}")
+        except:
+            pass
+                
+        with open(f"{filePath}\\static\\uploads\\{id}\\{file.filename}", 'wb') as f:
+            f.write(file.read())
+
     
     post = Posts.query.filter(Posts.id == id).first()
-    print(post)
+
+
+    
     post.leiras = leiras
     post.hatarido = hatarido
     post.hatarido_kod = hatarido_kod
-    post.file = file_name
-    post.file_mimetype = file_mimetype
-    db.session.commit()
+    if deleteFile=='on':
+        post.file = file_name
+        post.file_mimetype = file_mimetype
+    elif file != None:
+        post.file = file_name
+        post.file_mimetype = file_mimetype
     
-    print(leiras,hatarido,file,deleteFile, id)
+    db.session.commit()
 
     return redirect('/')
 

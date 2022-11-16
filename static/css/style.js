@@ -69,36 +69,34 @@ function closeUploadPopup(){
     document.getElementById("uploadPopup").close()
 }
 
-
 function theme(){
     let tables = document.getElementsByClassName('table')
     let root = document.querySelector(':root')
    
-    if(localStorage.theme == 'dark'){
-        Array.prototype.forEach.call(tables, (e)=>{
-            e.classList.remove('table-dark')
-        })
-        root.style.setProperty('--bg-active', getComputedStyle(root).getPropertyValue('--light'))
-        root.style.setProperty('--text-active', 'rgb(0,0,0)')
-    } else{
+    if(localStorage.theme == 'light'){
         Array.prototype.forEach.call(tables, (e)=>{
             e.classList.add('table-dark')
         })
         root.style.setProperty('--bg-active', getComputedStyle(root).getPropertyValue('--dark'))
         root.style.setProperty('--text-active', 'rgb(255,255,255)')
-        document.body.style.color = 'white'
+    } else{
+        Array.prototype.forEach.call(tables, (e)=>{
+            e.classList.remove('table-dark')
+        })
+        root.style.setProperty('--bg-active', getComputedStyle(root).getPropertyValue('--light'))
+        root.style.setProperty('--text-active', 'rgb(0,0,0)')
     }
     
 }
 
 function setTheme(){
     document.body.classList.add('transition')
-    if(localStorage.theme != 'dark'){
-        localStorage.theme = 'dark'
+    if(localStorage.theme != 'light'){
+        localStorage.theme = 'light'
         theme()
     }
     else{
-        localStorage.theme = 'light'
+        localStorage.theme = 'dark'
         theme()
     }
     setTimeout(()=>{document.body.classList.remove('transition')}, 200)
@@ -134,6 +132,8 @@ function openEditPopup(e){
         document.getElementById('eleiras').innerHTML = r['post']['leiras']
         document.getElementById('ehatarido').value = r['post']['hatarido']
         document.getElementById('eid').value = r['post']['id']
+        document.getElementById('editFileP').innerText = r['post']['file']
+
         })
     document.getElementById('editPopup').showModal()
     document.getElementById('editBtn').dataset.id = e.dataset.id
@@ -141,4 +141,18 @@ function openEditPopup(e){
 
 function closeEditPopup(){
     document.getElementById('editPopup').close()
+}
+
+trs = document.getElementsByTagName('tr')
+
+for(i = 0; i < trs.length; i++){
+    trs[i].addEventListener(
+        "mousemove", (e)=>{
+        x = e.offsetX;
+        y = e.offsetY;
+        root = document.querySelector(':root')
+        root.style.setProperty('--mx', x)
+        root.style.setProperty('--my', y)
+        console.log(x,y)
+    })
 }

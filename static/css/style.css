@@ -3,6 +3,9 @@
     --light: rgb(235, 235, 235);
     --bg-active: rgb(235, 235, 235);
     --text-active: black;
+
+    --mx: 0px;
+    --my: 0px;
 }
 
 body,html{
@@ -20,12 +23,36 @@ td{
     word-break: break-all;
 }
 
+/**tr{
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+}
+
+tr::before{
+    content: "";
+    width: inherit;
+    height: inherit;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    background-color: transparent;
+    background: radial-gradient(circle at var(--mx) var(--my), white 0%, transparent 10%);
+    background-size: 300%;
+    background-repeat: no-repeat;
+    opacity: 1;
+}**/
+
+td{
+    z-index: 4 !important;
+}
+
 #navbar, br{
     user-select: none;
     -webkit-user-select: none;
     -webkit-user-drag: none;
 }
-
 
 i{
     cursor: pointer;

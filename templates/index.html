@@ -25,7 +25,7 @@
             <input class="form-control" type="file" name="file" id="file">
 
             <br>
-            <button class="btn btn-danger" onclick="closeUploadPopup()">Mégse</button>
+            <label class="btn btn-danger" onclick="closeUploadPopup()">Mégse</label>
             <input type="submit" value="Kész" class="btn btn-success">
         </form>
     
@@ -55,11 +55,12 @@
             <hr>
             <input class="form-check-input" type="checkbox" value="on" name="deleteFile" id="deleteFile">
             <label class="form-check-label" for="deleteFile">File Törlése</label>
+            <p id="editFileP"></p>
             <label class="form-label" for="efile">Csatolt file (nem kötelező): </label>
             <input class="form-control" type="file" name="efile" id="efile">
             <input type="number" readonly id="eid" name="eid" style="overflow: none; height: 0px; user-select:none; opacity: 0; cursor: default;">
             <br>
-            <button class="btn btn-danger" onclick="closeEditPopup()">Mégse</button>
+            <label class="btn btn-danger" onclick="closeEditPopup()">Mégse</label>
             <input id="editBtn" type="submit" value="Kész" class="btn btn-success">
         </form>    
     </dialog>
@@ -75,7 +76,7 @@
             <p class="float-start">&nbsp;&#x2022;&nbsp;</p>
 
             <input id="visibility" type="checkbox" class="form-check-input pointer float-start text-decoration-underline" value="on" onclick="changeVisibility(this)">
-            <label for="visibility" class="form-check-label">Lejárt határidő mutatása</label>
+            <label for="visibility" class="form-check-label">&nbsp;Lejárt határidő mutatása</label>
 
             <i onclick="setTheme()" class="fa-sharp fa-solid fa-circle-half-stroke float-end"></i>
         </div>
@@ -86,7 +87,7 @@
             <thead class="thead-dark">
                 <tr>
                     <th>ID</th>
-                    <th>Leírás</th>
+                    <th style="width: 100%;">Leírás</th>
                     <th>Határidő&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
                     <th>&nbsp;</th>
                     <th>&nbsp;</th>
