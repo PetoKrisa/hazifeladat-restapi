@@ -1,6 +1,6 @@
 # hazifeladat-restapi
 
 Depencies:
--flask
--flask-admin
--flask-sqlalchemy
+- flask
+- flask-admin
+- flask-sqlalchemy
