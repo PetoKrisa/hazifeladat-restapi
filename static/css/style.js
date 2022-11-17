@@ -1,3 +1,8 @@
+function safeText(text){
+    text = text.replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+    return text
+}
+
 function generateTable(){
     fetch('/api/posts', {method:'get'})
     .then((r)=>{return r.json()})
@@ -17,7 +22,7 @@ function generateTable(){
             `
             <tr class="tr">
             <td><p>${posts[e].id}</p></td>
-            <td><p>${posts[e].leiras}</p></td>
+            <td><p>${safeText(posts[e].leiras)}</p></td>
             <td><p>${posts[e].hatarido}</p></td>
             <td><p><i onclick="openPostPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-magnifying-glass"></i></p></td>
             <td><i onclick="openDelPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-trash-can"></i></td>
@@ -25,12 +30,12 @@ function generateTable(){
             </tr>
             `
         } else if(posts[e].hatarido_kod > Date.now()/1000){
-            console.log('csak új')
+            console.log('új')
             document.getElementById('tbody').innerHTML = document.getElementById('tbody').innerHTML +
             `
             <tr class="tr">
             <td><p>${posts[e].id}</p></td>
-            <td><p>${posts[e].leiras}</p></td>
+            <td><p>${safeText(posts[e].leiras)}</p></td>
             <td><p>${posts[e].hatarido}</p></td>
             <td><p><i onclick="openPostPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-magnifying-glass"></i></p></td>
             <td><i onclick="openDelPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-trash-can"></i></td>
@@ -93,18 +98,21 @@ function theme(){
     let root = document.querySelector(':root')
     
     console.log('theme')
+    cs = getComputedStyle(root)
     if(localStorage.theme == 'light'){
         Array.prototype.forEach.call(tables, (e)=>{
             e.classList.add('table-dark')
         })
-        root.style.setProperty('--bg-active', getComputedStyle(root).getPropertyValue('--dark'))
+        root.style.setProperty('--bg-active', cs.getPropertyValue('--dark'))
+        root.style.setProperty('--fg-active', cs.getPropertyValue('--darker'))
         root.style.setProperty('--text-active', 'rgb(255,255,255)')
         root.style.setProperty('--glow', 'rgba(255,255,255,0.2)')
     } else{
         Array.prototype.forEach.call(tables, (e)=>{
             e.classList.remove('table-dark')
         })
-        root.style.setProperty('--bg-active', getComputedStyle(root).getPropertyValue('--light'))
+        root.style.setProperty('--bg-active', cs.getPropertyValue('--light'))
+        root.style.setProperty('--fg-active', cs.getPropertyValue('--lighter'))
         root.style.setProperty('--text-active', 'rgb(0,0,0)')
         root.style.setProperty('--glow', 'rgba(180,180,180,0.45)')
     }
@@ -151,7 +159,7 @@ function openEditPopup(e){
     fetch(`/api/posts/${e.dataset.id}`)
     .then(d=>d.json())
     .then((r)=>{
-        document.getElementById('eleiras').innerHTML = r['post']['leiras']
+        document.getElementById('eleiras').innerHTML = safeText(r['post']['leiras'])
         document.getElementById('ehatarido').value = r['post']['hatarido']
         document.getElementById('eid').value = r['post']['id']
 
@@ -169,7 +177,7 @@ function openPostPopup(e){
     fetch(`/api/posts/${e.dataset.id}`)
     .then(d=>d.json())
     .then((r)=>{
-        document.getElementById('pleiras').innerHTML = r['post']['leiras']
+        document.getElementById('pleiras').innerHTML = safeText(r['post']['leiras'])
         document.getElementById('phatarido').innerText = r['post']['hatarido']
         pfileok = document.getElementById('pfileok')
         pfileok.innerHTML = ""

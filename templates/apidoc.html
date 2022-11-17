@@ -8,24 +8,207 @@
     <link rel="stylesheet" href="../static/css/bootstrap.css">
     <link rel="stylesheet" href="../static/css/style.css">
     <title>API docs</title>
+
+    <style>
+    body, html{
+        width: 100vw !important;
+        height: 100vh;
+        scroll-behavior: smooth;
+        padding: 0px;
+        margin: 0px;
+    }
+    *{
+        list-style: none !important;
+    }
+
+    .get{
+        background-color: rgba(44, 155, 0, 0.4);
+        border: 1px rgb(55, 196, 0) solid;
+        content: "GET";
+    }
+    .post{
+        background-color: rgba(0, 89, 172, 0.5);
+        border: 1px rgba(0, 132, 255, 0.4) solid;
+        content: "POST";
+    }
+    .delete{
+        background-color: rgba(155, 0, 0, 0.4);
+        border: 1px rgb(228, 0, 0) solid;
+        content: "DELETE";
+    }
+
+    .get, .post, .delete{
+        border-radius: 50px;
+        padding: 5px;
+        margin: 10px;
+        font-size: 10pt;
+        position: relative;
+        bottom: 3px;
+        font-weight: normal;
+        font-family: monospace;
+    }
+    </style>
 </head>
 <body onload="theme()">
     <div class="container">
-        <br>    
+        <br>
+        <!--navbar-->
         <div id="navbar" class="container-fluid">
             <i onclick="setTheme()" style="float: right !important;" class="fa-sharp fa-solid fa-circle-half-stroke float-end"></i>
         </div>
         <br>    
-        <div class="row">
-            <div class="col-lg-3 col-12">
-                <a role="button" data-toggle="user" data-toggle="collapse" aria-expanded="false" aria-controls="user">User</a>
-                <div class="collapse" id="user">Session</div>
+        <div  class="row">
+            <div id="doc-nav-menu" class="col-lg-3 col-12" style="height: fit-content;">
+                <a class="text-decoration-none btn-primary" data-bs-toggle="collapse" href="#api" role="button">
+                   <h4>API</h4>
+                </a>
+                <div class="collapse" id="api">
+                    <ul>
+                        <li><a href="#/api" class="text-decoration-none"><h6>/api</h6></a></li>
+                        <li><a href="#/api/docs" class="text-decoration-none"><h6>/api/docs</h6></a></li>
+                    </ul>
+                </div>
+                <a class="text-decoration-none btn-primary" data-bs-toggle="collapse" href="#session" role="button">
+                    <h4>Session</h4>
+                </a>
+                <div class="collapse" id="session">
+                    <ul>
+                        <li><a href="#/session" class="text-decoration-none"><h6>/session</h6></a></li>
+                        <li><a href="#/session/reset" class="text-decoration-none"><h6>/session/reset</h6></a></li>
+                    </ul>
+                </div>
+                <a class="text-decoration-none btn-primary" data-bs-toggle="collapse" href="#posts" role="button">
+                <h4>Posts</h4>
+                </a>
+                <div class="collapse" id="posts">
+                    <ul>
+                        <li><a href="#/posts" class="text-decoration-none"><h6>/posts</h6></a></li>
+                        <li><a href="#/posts/{post.id}" class="text-decoration-none"><h6>/posts/{post.id}</h6></a></li>
+                        <li><a href="#/posts/upload" class="text-decoration-none"><h6>/posts/upload</h6></a></li>
+                        <li><a href="#/posts/{post.id}/delete" class="text-decoration-none"><h6>/posts/{post.id}/delete</h6></a></li>
+                        <li><a href="#/posts/{post.id}/file/{file.name}" class="text-decoration-none"><h6>/posts/{post.id}/file/{file.name}</h6></a></li>
+                        <li><a href="#/posts/{post.id}/file/{file.name}/delete" class="text-decoration-none"><h6>/posts/{post.id}/file/{file.name}/delete</h6></a></li>
+                        <li><a href="#/posts/edit" class="text-decoration-none"><h6>/posts/edit</h6></a></li>
+                        
+                    </ul>
+                </div>
             </div>
-            <div class="col-lg-9 col-12">a</div>
+
+            <!--main-->
+            <div id="doc-main-content" class="col-lg-9 col-12">
+                <!--api-->
+                <h1>API</h1>
+                <h3 id="/api">/api<span class="get">GET</span></h3>
+                <p>Az <span class="monospace">/api</span> csak egy JSON visszaigazolást küld, egy status kóddal, és egy verzió számmal</p>
+                <code>{
+    "status": 200,
+    "version": 1
+}</code>        
+                <br>
+                <h3 id="/api">/api/docs<span class="get">GET</span></h3>
+                <p>Ez a link, átirányít erre az oldalra</p>
+
+                <!--session-->
+                <hr>
+                <p class="text-muted">Innentől inden link domain.com/api -al kezdődik</p>
+                <h1>Session</h1>
+                <h3 id="/session">/session<span class="get">GET</span></h3>
+                <p>Használaton kívüli. JSON formátumban visszaküldi a sessionben tárolt adatokat. Most csak a tokent</p>
+                <code>{
+    "token": "1364-9268"
+}</code>
+                <br>
+                <h3 id="/session/reset">/session/reset<span class="post">POST</span></h3>
+                <p>Generál egy új tokent. Nem küld vissza adatot, csak átírányít a /session -re</p>
+
+                <!--Posts-->
+                <h1>Posts</h1>
+                <h3 id="/posts">/posts<span class="get">GET</span></h3>
+                <p>Vissza küldi az összes postot az adatbázisból JSON formátumban</p>
+                <code>{
+    "posts": [
+        {
+        "files": [
+            "file1.mp4",
+            "file2.zip",
+        ],
+        "hatarido": "2022-04-20",
+        "hatarido_kod": 1650405600,
+        "id": 1,
+        "leiras": "Feladat leirasa"
+        },
+
+        {
+        "files": [
+            "file1.png"
+        ],
+        "hatarido": "2022-04-20",
+        "hatarido_kod": 1650405600,
+        "id": 2,
+        "leiras": "másik feladat leirasa"
+        }
+    ],
+    "status": 200
+}</code> 
+
+            <br>
+            <h3 id="/posts/{post.id}">/posts/{post.id}<span class="get">GET</span></h3>
+            <p>Vissza küldi <span class="font-monospace">post.id</span> id-jű post adatait JSON formátumban</p>
+            <code>{
+"post": {
+    "files": [
+        "file1.mp4",
+        "file2.zip",
+    ],
+    "hatarido": "2022-04-20",
+    "hatarido_kod": 1650405600,
+    "id": 3,
+    "leiras": "Feladat leirasa"
+    },
+    "status": 200
+}</code>
+
+            <br>
+            <h3 id="/posts/upload">/posts/upload<span class="post">POST</span></h3>
+            <p>Új post feltöltése. A body-nak tartalmaznia kell egy Form-ot. A mimetype pedig multipart/form-data.</p>
+            <p>A form mezői és adattípusai:</p>
+            <ul class="docs-list list-group">
+                <li class="list-group-item">leiras &rarr; String</li>
+                <li class="list-group-item">hatarido &rarr; DateTime</li>
+                <li class="list-group-item">file &rarr; FileList</li>
+            </ul>
+            <br>
+            <h3 id="/posts/{post.id}/delete">/posts/{post.id}/delete<span class="delete">DELETE</span></h3>
+            <p>Teljesen kitörli <span class="font-monospace">post.id</span> id-jű postot az adatbázisból, a fileokkal együtt. Csak egy visszaigazolást küld.</p>
+            
+            <br>
+            <h3 id="/posts/{post.id}/file/{file.name}">/posts/{post.id}/file/{file.name}<span class="get">GET</span></h3>
+            <p>Egy filet küld vissza. Akármilyen kiterjesztésű lehet.</p>
+            <br>
+            <h3 id="/posts/{post.id}/file/{file.name}/delete">/posts/{post.id}/file/{file.name}/delete<span class="delete">DELETE</span></h3>
+            <p>Kitörli a <span class="font-monospace">post.id</span> id-jű poszt <span class="font-monospace">file.name</span> nevű file-ját</p>
+            
+            <h3 id="/posts/edit">/posts/edit<span class="post">POST</span></h3>
+            <p>Szerkeszteni lehet egy meglévő postot. Hasonlóan működik mint a <a href="#/posts/upload">/posts/upload</a> de a paraméterekben van különbség. 
+                Az <span class="font-monospace">eid</span> mezőben a szerkesztendő poszt idjét tároljuk, ez az oldalon láthatatlan. 
+                A <span class="font-monospace">deleteFile</span> mező ha 'on' értékű, akkor az összes file kitörlődik ami a posthoz van rendelve
+            </p>
+            <p>A form mezői és adattípusai:</p>
+            <ul class="docs-list list-group">
+                <li class="list-group-item">eleiras &rarr; String</li>
+                <li class="list-group-item">ehatarido &rarr; DateTime</li>
+                <li class="list-group-item">deleteFile &rarr; String (vagy 'on', vagy none)</li>
+                <li class="list-group-item">efile &rarr; FileList</li>
+                <li class="list-group-item">eid &rarr; Integer</li>
+            </ul>
+
+            <br>
         </div>
     </div>
+</div>
 
     <script src="../static/css/style.js"></script>
 </body>
 <script src="https://kit.fontawesome.com/e2b9ce2b9c.js" crossorigin="anonymous"></script>
+<script src="../static/css/bootstrap.min.js"></script>
 </html>

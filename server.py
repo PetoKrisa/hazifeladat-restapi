@@ -1,7 +1,6 @@
 import os
 import shutil
 from io import BytesIO
-from urllib import response
 import flask
 import hashlib
 from sqlalchemy import or_, desc
@@ -29,7 +28,6 @@ app.config['JSON_AS_ASCII'] = False
 
 db = SQLAlchemy(app)
 admin = flask_admin.Admin(app, name='API')
-
 #databases
 class Posts(db.Model):
     id = db.Column(db.Integer, primary_key=True, unique=True, autoincrement=True)
@@ -40,8 +38,12 @@ class Posts(db.Model):
     def __repr__(self):
         return f'Post: {self.id}'
 
+admin.add_view(ModelView(Posts, db.session))
+admin.add_link(MenuLink(name='Site', url='/'))
+
 @app.before_request
 def tokenGenerator():
+    #return Response(response="418 -  I'm a teapot", status=418)
     if 'token' not in session.keys():
         session['token'] = f'{randint(1000,9999)}-{randint(1000,9999)}'
 
@@ -63,11 +65,13 @@ def apiDocs():
 def apiSession():
     return jsonify({'token': f'{session["token"]}'})
 
-@app.route('/api/session/reset')
+@app.route('/api/session/reset', methods=['POST', 'GET']) #post
 def apiSessionReset():
-    session.clear()
-    return redirect('/api/session')
-
+    if request.method.lower() != 'post':
+        return Response(response=json.dumps(dict(status=405)), status=405, mimetype='application/json')
+    else:
+        session.clear()
+        return redirect('/api/session')
 
 @app.route('/api/posts/upload', methods=['POST', 'GET']) #post
 def apiPostsUpload():

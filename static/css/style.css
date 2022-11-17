@@ -1,8 +1,13 @@
 :root{
     --dark: rgb(44,48,52);
+    --darker: rgb(33,37,41);
     --light: rgb(235, 235, 235);
+    --lighter: rgb(223,223,223);
+
+    --fg-active: rgb(207, 207, 207);
     --bg-active: rgb(235, 235, 235);
     --text-active: black;
+
     --glow: rgba(255,255,255,0.3);
     --border-radius: 6px;
 
@@ -10,10 +15,28 @@
     --my: 0px;
 }
 
+::-webkit-scrollbar{
+    width: 10px;
+}
+::-webkit-scrollbar-track{
+    background-color: transparent;
+}
+::-webkit-scrollbar-button{
+   background-color: transparent;
+}
+::-webkit-scrollbar-thumb{
+    background-color: var(--darker);
+}
+
+.monospace{
+    font-family: monospace !important;
+}
+
 body,html{
     scroll-behavior: smooth;
     width: 100vw;
     height: 100vh;
+    overflow-x: hidden;
 }
 
 body{
@@ -141,6 +164,45 @@ p, i{
     transition: none !important;
 }
 
+/*doc*/
+
+#doc-nav-menu{
+    background-color: var(--fg-active);
+    border-radius: calc(var(--border-radius)*2);
+    max-height: fit-content !important;
+    position: fixed;
+    width: 300px;
+}
+
+#doc-main-content{
+    position: relative;
+    left: 315px;
+}
+
+.row{
+    max-width: 100vw !important;
+    margin: auto;
+}
+.row p{
+    word-break: normal;
+}
+
+code{
+    font-family: monospace !important;
+    padding: 5px;
+    display: block;
+    white-space: pre-wrap;
+    background-color: var(--fg-active);
+    border-radius: calc(var(--border-radius)*2);
+    max-width: fit-content;
+}
+
+.docs-list li{
+    max-width: fit-content;
+    background-color: var(--fg-active) !important;
+    color: var(--text-active) !important;
+}
+
 @keyframes fade-in{
     from{
         opacity: 0;
@@ -192,5 +254,17 @@ p, i{
     #postPopup{
         min-width: 200px;
         max-width: none;
+    }
+}
+
+@media (max-width: 980px) {
+    #doc-nav-menu{
+        position: static !important;
+        width: 100%;
+    }
+    
+    #doc-main-content{
+        position: static !important;
+        left: 0px;
     }
 }
