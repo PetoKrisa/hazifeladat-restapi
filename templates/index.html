@@ -21,8 +21,8 @@
             <label class="form-label" for="hatarido">Határidő: </label>
             <input  class="form-control" type="date" name="hatarido" id="hatarido" required>
             <hr>
-            <label class="form-label" for="file">Csatolt file (nem kötelező): </label>
-            <input class="form-control" type="file" name="file" id="file">
+            <label class="form-label" for="file">Csatolt fileok (nem kötelező): </label>
+            <input class="form-control" type="file" name="file" id="file" multiple>
 
             <br>
             <label class="btn btn-danger" onclick="closeUploadPopup()">Mégse</label>
@@ -54,10 +54,11 @@
             <input  class="form-control" type="date" name="ehatarido" id="ehatarido" required>
             <hr>
             <input class="form-check-input" type="checkbox" value="on" name="deleteFile" id="deleteFile">
-            <label class="form-check-label" for="deleteFile">File Törlése</label>
-            <p id="editFileP"></p>
-            <label class="form-label" for="efile">Csatolt file (nem kötelező): </label>
-            <input class="form-control" type="file" name="efile" id="efile">
+            <label class="form-check-label" for="deleteFile">Fileok Törlése</label>
+            
+            <br>
+            <label class="form-label" for="efile">Csatolt fileok (nem kötelező): </label>
+            <input class="form-control" type="file" name="efile" id="efile" multiple>
             <input type="number" readonly id="eid" name="eid" style="overflow: none; height: 0px; user-select:none; opacity: 0; cursor: default;">
             <br>
             <label class="btn btn-danger" onclick="closeEditPopup()">Mégse</label>
@@ -65,6 +66,21 @@
         </form>    
     </dialog>
 
+    <!--Post popup-->
+    <dialog id="postPopup" class="">
+      
+        <h4>Feladat</h4>
+        <p id="phatarido" class="text-muted"></p>
+        <h6 id="pleiras"></h6>
+        <hr>
+        <h5>Fileok</h5>
+        <ul id="pfileok" class="list-group">
+
+        </ul>
+        <br>
+        <label class="btn btn-danger" onclick="closePostPopup()">Bezár</label>
+    
+    </dialog>
 
     <br>
     <div class="container w-100">

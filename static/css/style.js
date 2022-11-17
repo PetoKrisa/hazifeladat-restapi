@@ -9,11 +9,7 @@ function generateTable(){
 
     posts = d['posts']
     for (e = 0; e < posts.length; e++){
-        if (posts[e].file != null){
-            dlIcon = `<i onclick="download(this)" title="${posts[e].file}" data-id="${posts[e].id}" class="fa-solid fa-download"></i>`
-        } else{
-            dlIcon = '<i onclick="alert(\'Nincsen File Csatolva!\')" data-id="${posts[e].id}" class="text-muted fa-solid"></i>'
-        }
+
 
         if(localStorage.showOld == 'true' && posts[e].hatarido_kod < Date.now()/1000){
             console.log('régi')
@@ -23,7 +19,7 @@ function generateTable(){
             <td><p>${posts[e].id}</p></td>
             <td><p>${posts[e].leiras}</p></td>
             <td><p>${posts[e].hatarido}</p></td>
-            <td><p>${dlIcon}</p></td>
+            <td><p><i onclick="openPostPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-magnifying-glass"></i></p></td>
             <td><i onclick="openDelPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-trash-can"></i></td>
             <td><i onclick="openEditPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-pen"></i></td>
             </tr>
@@ -36,7 +32,7 @@ function generateTable(){
             <td><p>${posts[e].id}</p></td>
             <td><p>${posts[e].leiras}</p></td>
             <td><p>${posts[e].hatarido}</p></td>
-            <td><p>${dlIcon}</p></td>
+            <td><p><i onclick="openPostPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-magnifying-glass"></i></p></td>
             <td><i onclick="openDelPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-trash-can"></i></td>
             <td><i onclick="openEditPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-pen"></i></td>
             </tr>
@@ -157,7 +153,6 @@ function openEditPopup(e){
         document.getElementById('eleiras').innerHTML = r['post']['leiras']
         document.getElementById('ehatarido').value = r['post']['hatarido']
         document.getElementById('eid').value = r['post']['id']
-        document.getElementById('editFileP').innerText = r['post']['file']
 
         })
     document.getElementById('editPopup').showModal()
@@ -169,3 +164,43 @@ function closeEditPopup(){
 }
 
 
+function openPostPopup(e){
+    fetch(`/api/posts/${e.dataset.id}`)
+    .then(d=>d.json())
+    .then((r)=>{
+        document.getElementById('pleiras').innerHTML = r['post']['leiras']
+        document.getElementById('phatarido').innerText = r['post']['hatarido']
+        pfileok = document.getElementById('pfileok')
+        pfileok.innerHTML = ""
+        for (let i = 0; i < r['post']['files'].length; i++){
+            pfileok.innerHTML = pfileok.innerHTML +
+            `
+            <li data-id="${r['post']['id']}" class="list-group-item">
+                ${r['post']['files'][i]}
+                
+                <i onclick="delFile(this)" data-id="${r['post']['id']}" data-file="${r['post']['files'][i]}" class="float-end fa-sharp fa-solid fa-trash"></i>
+                <p class="float-end" >&nbsp; </p>
+                <i onclick="openFile(this)" data-id="${r['post']['id']}" data-file="${r['post']['files'][i]}" class="float-end fa-solid fa-download"></i>
+                </li>
+            
+            `
+        }
+    })
+    document.getElementById('postPopup').showModal()
+    document.getElementById('postPopup').dataset.id = e.dataset.id
+}
+
+function closePostPopup(){
+    document.getElementById('postPopup').close()
+}
+
+function delFile(e){
+    pfileok = document.getElementById('pfileok')
+    pfileok.removeChild(e.closest('li'))
+    fetch(`/api/posts/${e.dataset.id}/file/${e.dataset.file}/delete`, {method: 'delete'})
+
+}
+
+function openFile(e){
+    window.open(`/api/posts/`, '_blank')
+}

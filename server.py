@@ -36,9 +36,6 @@ class Posts(db.Model):
     leiras = db.Column(db.String, nullable=False)
     hatarido = db.Column(db.Date, nullable=False)
     hatarido_kod = db.Column(db.Integer, nullable=False)
-    
-    file = db.Column(db.String)
-    file_mimetype = db.Column(db.String)
 
     def __repr__(self):
         return f'Post: {self.id}'
@@ -76,15 +73,13 @@ def apiPostsUpload():
         hatarido_kod = hatarido.timestamp()+89580 #23:59
 
         file = request.files['file']
-        file_name = file.filename
-        file_mimetype = file.mimetype
+        files = request.files.getlist('file')
         
-        if len(file_name) == 0:
+        if len(files) == 0:
             file = None
-            file_name = None
-            file_mimetype = None
+            files = None
 
-    postToSave = Posts(leiras = leiras, hatarido = hatarido, hatarido_kod = hatarido_kod, file=file_name, file_mimetype=file_mimetype)
+    postToSave = Posts(leiras = leiras, hatarido = hatarido, hatarido_kod = hatarido_kod)
     db.session.add(postToSave)
     db.session.commit()
     post = Posts.query.order_by(desc(Posts.id)).first()
@@ -92,13 +87,14 @@ def apiPostsUpload():
     if file != None:
         try:
             os.mkdir(f"{filePath}\\static\\uploads\\{post.id}")
+            post.file = (f"{filePath}\\static\\uploads\\{post.id}")
         except:
             pass
-        try:
-            with open(f"{filePath}\\static\\uploads\\{post.id}\\{post.file}", 'wb') as f:
-                f.write(file.read())
-        except:
-            pass
+        for save in files:
+            with open(f"{filePath}\\static\\uploads\\{post.id}\\{save.filename.replace(' ', '_')}", 'wb') as f:
+                f.write(save.read())
+    db.session.commit()
+            
     
     return redirect('/')
 
@@ -107,25 +103,35 @@ def apiPosts():
     postsDict = {'status':0, 'posts': []}
     postsQuery = Posts.query.order_by(desc(Posts.hatarido_kod)).all()
     for post in postsQuery:
-        postsDict['posts'].append(dict(id=post.id, leiras=post.leiras, hatarido=str(post.hatarido), hatarido_kod=post.hatarido_kod, file=post.file, file_mimetype=post.file_mimetype))
+        files = os.listdir(f"{filePath}\\static\\uploads\\{post.id}")
+        postsDict['posts'].append(dict(id=post.id, leiras=post.leiras, hatarido=str(post.hatarido), hatarido_kod=post.hatarido_kod, files=files))
     postsDict['status'] = 200
     return jsonify(postsDict)
 
 @app.route('/api/posts/<id>') #get
 def apiPostsId(id):
     postsDict = {'status':0, 'post': {}}
+    files = os.listdir(f"{filePath}\\static\\uploads\\{id}")
     post = Posts.query.filter(Posts.id==id).order_by(desc(Posts.hatarido_kod)).first()
-    postsDict['post'] = (dict(id=post.id, leiras=post.leiras, hatarido=str(post.hatarido), hatarido_kod=post.hatarido_kod, file=post.file, file_mimetype=post.file_mimetype))
+    postsDict['post'] = (dict(id=post.id, leiras=post.leiras, hatarido=str(post.hatarido), hatarido_kod=post.hatarido_kod, files=files))
     postsDict['status'] = 200
     return jsonify(postsDict)
 
-@app.route('/api/posts/<id>/file') #get
-def appRouteIdFile(id):
+@app.route('/api/posts/<id>/file/<fileName>') #get
+def appRouteIdFile(id, fileName):
     post = Posts.query.filter(Posts.id==id).first()
-    if post.file!=None and post.file != '': 
-        return send_file(f'{filePath}\\static\\uploads\\{id}\\{post.file}', mimetype=post.file_mimetype)
-    else:
+    try:
+        return send_file(f'{filePath}\\static\\uploads\\{id}\\{fileName}')
+    except:
         return Response(response=json.dumps(dict(status=204)), status=204, mimetype='application/json')
+
+@app.route('/api/posts/<id>/file/<fileName>/delete', methods=['get', 'delete']) #delete
+def apiPostsIdFileFilenameDelete(id, fileName):
+    if request.method.lower() != 'delete':
+            return Response(response=json.dumps(dict(status=405)), status=405, mimetype='application/json')
+    else:
+        os.remove(f'{filePath}\\static\\uploads\\{id}\\{fileName}')
+        return Response(response=json.dumps(dict(status=200)), status=200, mimetype='application/json')
 
 @app.route('/api/posts/<id>/delete', methods=['GET', 'DELETE']) #delete
 def apiPostsIdDelete(id):
@@ -149,19 +155,16 @@ def apiPostsEdit():
     
     id = request.form['eid']
     
-    file = request.files['efile']
-    file_name = file.filename
-    file_mimetype = file.mimetype
+
+    files = request.files.getlist('efile')
+        
+    if len(files) == 0:
+        files = None
 
     try:
         deleteFile = request.form['deleteFile']
     except:
         deleteFile = 'off'
-    
-    if len(file_name)==0 or deleteFile == 'on':
-        file = None
-        file_name = None
-        file_mimetype = None
         
     if deleteFile == 'on':
         try:
@@ -169,32 +172,31 @@ def apiPostsEdit():
         except:
             pass
         
-    if file != None:
+    if len(files) != 0:
         try:
             os.mkdir(f"{filePath}\\static\\uploads\\{id}")
         except:
             pass
-                
-        with open(f"{filePath}\\static\\uploads\\{id}\\{file.filename}", 'wb') as f:
-            f.write(file.read())
+        
+        for save in files:
+            try:
+                with open(f"{filePath}\\static\\uploads\\{id}\\{save.filename.replace(' ', '_')}", 'wb') as f:
+                    f.write(save.read())
+            except:
+                pass
 
     
     post = Posts.query.filter(Posts.id == id).first()
-
-
     
     post.leiras = leiras
     post.hatarido = hatarido
     post.hatarido_kod = hatarido_kod
     if deleteFile=='on':
-        post.file = file_name
-        post.file_mimetype = file_mimetype
-    elif file != None:
-        post.file = file_name
-        post.file_mimetype = file_mimetype
+        post.file = None
+    elif len(files) != 0:
+        post.file = f"{filePath}\\static\\uploads\\{id}"
     
     db.session.commit()
-
     return redirect('/')
 
 
@@ -207,7 +209,7 @@ def index():
 def handle_context():
     return dict(session=session)
 
-
-if __name__ == '__main__':
-    db.create_all()
-    app.run(host='0.0.0.0', port=6969, debug=True)
+with app.app_context():
+    if __name__ == '__main__':
+        db.create_all()
+        app.run(host='0.0.0.0', port=6969, debug=True)

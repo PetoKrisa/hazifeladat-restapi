@@ -102,6 +102,16 @@ dialog button{
     border: none;
 }
 
+#postPopup{
+    min-width: 300px;
+    max-width: 60vw;
+    color: var(--text-active);
+}
+
+li{
+    word-break: break-all   ;
+}
+
 textarea{
     width: 100%;
 }
@@ -155,5 +165,10 @@ p, i{
 
     .tr::before, .trh::before{
         opacity: 0 !important;
+    }
+
+    #postPopup{
+        min-width: 200px;
+        max-width: none;
     }
 }
