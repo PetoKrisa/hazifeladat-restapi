@@ -4,9 +4,10 @@
     --bg-active: rgb(235, 235, 235);
     --text-active: black;
     --glow: rgba(255,255,255,0.3);
+    --border-radius: 6px;
 
-    --mx: 11px;
-    --my: 300px;
+    --mx: 0px;
+    --my: 0px;
 }
 
 body,html{
@@ -61,6 +62,10 @@ td i, td p{
     word-break: normal;
 }
 
+a{
+    color: var(--text-active);
+}
+
 td p{
     padding: 1px;
     margin: 1px;
@@ -95,7 +100,7 @@ dialog{
     animation: fade-in 700ms;
     background-color: var(--bg-active) !important;
     color: var(--text-active);
-    border-radius: 6px;
+    border-radius: var(--border-radius  );
 }
 
 dialog button{
@@ -103,13 +108,30 @@ dialog button{
 }
 
 #postPopup{
-    min-width: 300px;
-    max-width: 60vw;
+    min-width: 500px;
+    max-width: 500px;
     color: var(--text-active);
 }
 
 li{
-    word-break: break-all   ;
+    word-break: break-all;
+
+}
+li p{
+    margin: 0px;
+    padding: 0px;
+
+}
+
+thead{
+    border-bottom: 1px gray solid;
+}
+
+table, dialog{
+    border-radius: var(--border-radius) !important;
+}
+table{
+    overflow: hidden !important;
 }
 
 textarea{

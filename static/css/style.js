@@ -91,7 +91,8 @@ function closeUploadPopup(){
 function theme(){
     let tables = document.getElementsByClassName('table')
     let root = document.querySelector(':root')
-   
+    
+    console.log('theme')
     if(localStorage.theme == 'light'){
         Array.prototype.forEach.call(tables, (e)=>{
             e.classList.add('table-dark')
@@ -199,8 +200,8 @@ function delFile(e){
     pfileok.removeChild(e.closest('li'))
     fetch(`/api/posts/${e.dataset.id}/file/${e.dataset.file}/delete`, {method: 'delete'})
 
-}
+}   
 
 function openFile(e){
-    window.open(`/api/posts/`, '_blank')
+    window.open(`/api/posts/${e.dataset.id}/file/${e.dataset.file}`, '_blank')
 }

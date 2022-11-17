@@ -55,6 +55,10 @@ def favicon():
 def api():
     return jsonify({'status': 200, 'version': 1})
 
+@app.route('/api/docs')
+def apiDocs():
+    return render_template('apidoc.html')
+
 @app.route('/api/session')
 def apiSession():
     return jsonify({'token': f'{session["token"]}'})
@@ -91,8 +95,11 @@ def apiPostsUpload():
         except:
             pass
         for save in files:
-            with open(f"{filePath}\\static\\uploads\\{post.id}\\{save.filename.replace(' ', '_')}", 'wb') as f:
-                f.write(save.read())
+            try: #ha nem működik nem működik
+                with open(f"{filePath}\\static\\uploads\\{post.id}\\{save.filename.replace(' ', '_')}", 'wb') as f:
+                    f.write(save.read())
+            except:
+                pass
     db.session.commit()
             
     
@@ -212,4 +219,4 @@ def handle_context():
 with app.app_context():
     if __name__ == '__main__':
         db.create_all()
-        app.run(host='0.0.0.0', port=6969, debug=True)
+        app.run(host='0.0.0.0', port=80, debug=True)
