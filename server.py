@@ -58,7 +58,7 @@ class Users(db.Model):
     posts = db.relationship('Posts', backref='users')
 
     def __repr__(self):
-        return f'Post: {self.id}'
+        return f'{self.id}, {self.username}'
 
 roles = {1: 'user', 2: 'editor', 3: 'admin'}
 
