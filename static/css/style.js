@@ -15,6 +15,13 @@ function generateTable(){
     posts = d['posts']
     for (e = 0; e < posts.length; e++){
 
+        if(localStorage.role=='admin' || (localStorage.id == posts[e].author[0] && localStorage.role=='editor') ){
+            ticon = `<i onclick="openDelPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-trash-can"></i>`
+            eicon = `<i onclick="openEditPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-pen"></i>`
+        } else {
+            ticon = ""
+            eicon = ""
+        }
 
         if(localStorage.showOld == 'true' && posts[e].hatarido_kod < Date.now()/1000){
             console.log('régi')
@@ -25,8 +32,8 @@ function generateTable(){
             <td><p>${safeText(posts[e].leiras)}</p></td>
             <td><p>${posts[e].hatarido}</p></td>
             <td><p><i onclick="openPostPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-magnifying-glass"></i></p></td>
-            <td class="role"><i onclick="openDelPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-trash-can"></i></td>
-            <td class="role"><i onclick="openEditPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-pen"></i></td>
+            <td class="role">${ticon}</td>
+            <td class="role">${eicon}</td>
             </tr>
             `
         } else if(posts[e].hatarido_kod > Date.now()/1000){
@@ -38,8 +45,8 @@ function generateTable(){
             <td><p>${safeText(posts[e].leiras)}</p></td>
             <td><p>${posts[e].hatarido}</p></td>
             <td><p><i onclick="openPostPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-magnifying-glass"></i></p></td>
-            <td class="role"><i onclick="openDelPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-trash-can"></i></td>
-            <td class="role"><i onclick="openEditPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-pen"></i></td>
+            <td class="role">${ticon}</td>
+            <td class="role">${eicon}</td>
             </tr>
             `
 
@@ -138,8 +145,10 @@ function closeUploadPopup(){
 function upload(){
     const uploadForm = new FormData(document.getElementById("uploadForm"))
     fetch('/api/posts/upload', {method: 'post', body: uploadForm, headers: {'auth': localStorage.token}})
-    closeUploadPopup()
-    generateTable()
+    .then(d=>{
+        closeUploadPopup()
+        generateTable()
+    })
 }
 
 function openDelPopup(e){
@@ -152,10 +161,10 @@ function closeDelPopup(){
 
 function del(e){
     fetch(`/api/posts/${e.dataset.id}/delete`, {method: 'delete', headers: {'auth': localStorage.token}})
-    closeDelPopup()
-    generateTable()
-    generateTable()
-    generateTable()
+    .then(d=>{
+        closeDelPopup()
+        generateTable()
+    })
 }
 
 function openEditPopup(e){
@@ -178,8 +187,10 @@ function closeEditPopup(){
 function edit(){
     const editForm = new FormData(document.getElementById("editForm"))
     fetch('/api/posts/edit', {method: 'post', body: editForm, headers: {'auth': localStorage.token}})
-    closeEditPopup()
-    generateTable()
+    .then(d=>{
+        closeEditPopup()
+        generateTable()
+    })
 }
 
 function openPostPopup(e){
@@ -187,16 +198,22 @@ function openPostPopup(e){
     .then(d=>d.json())
     .then((r)=>{
         document.getElementById('pleiras').innerHTML = safeText(r['post']['leiras'])
-        document.getElementById('phatarido').innerText = r['post']['hatarido']
+        document.getElementById('phatarido').innerHTML = `${r['post']['hatarido']}&nbsp;&#x2022;&nbsp;${r['post']['author'][1]}`
         pfileok = document.getElementById('pfileok')
         pfileok.innerHTML = ""
+
         for (let i = 0; i < r['post']['files'].length; i++){
+            if (localStorage.role=='admin' || (localStorage.id == r['post']['author'][0] && localStorage.role=='editor')){
+                ticon = `<i onclick="delFile(this)" data-id="${r['post']['id']}" data-file="${r['post']['files'][i]}" class="role float-end fa-sharp fa-solid fa-trash"></i>`
+            } else{
+                ticon = ""
+            }
             pfileok.innerHTML = pfileok.innerHTML +
             `
             <li data-id="${r['post']['id']}" class="list-group-item">
                 ${r['post']['files'][i]}
                 
-                <i onclick="delFile(this)" data-id="${r['post']['id']}" data-file="${r['post']['files'][i]}" class="role float-end fa-sharp fa-solid fa-trash"></i>
+                ${ticon}
                 <p class="float-end" >&nbsp; </p>
                 <i onclick="openFile(this)" data-id="${r['post']['id']}" data-file="${r['post']['files'][i]}" class="float-end fa-solid fa-download"></i>
                 </li>
@@ -213,9 +230,14 @@ function closePostPopup(){
 }
 
 function delFile(e){
-    pfileok = document.getElementById('pfileok')
-    pfileok.removeChild(e.closest('li'))
     fetch(`/api/posts/${e.dataset.id}/file/${e.dataset.file}/delete`, {method: 'delete', headers: {'auth': localStorage.token}})
+    .then(r=>r.json())
+    .then(d=>{
+        if (d['status'] == 200){
+            pfileok = document.getElementById('pfileok')
+            pfileok.removeChild(e.closest('li'))
+        }
+    })
 
 }   
 
@@ -274,9 +296,11 @@ function login(){
             localStorage.token = d['token']
             localStorage.role = d['role']
             localStorage.username = d['username']
+            localStorage.id = d['id']
 
             closeLoginPopup()
             isLoggedIn()
+            generateTable()
         }
     })
 }

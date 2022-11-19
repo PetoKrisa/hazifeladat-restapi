@@ -89,6 +89,11 @@ def apiDocs():
 @app.route('/api/users/add') #get
 def apiUsersAdd():
     try:
+        if not session['admin']:
+            return Response(response=json.dumps(dict(status=403)), status=403, mimetype='application/json')
+    except:
+        return Response(response=json.dumps(dict(status=403)), status=403, mimetype='application/json')
+    try:
         username = request.args['user']
         password = request.args['pass']
         role = request.args['role']
@@ -115,8 +120,11 @@ def apiSessionLogin():
         
         user = Users.query.filter(Users.password == hashPassword, Users.username == username).first()
 
+        if user.role == 'admin':
+            session['admin'] = True
+        
         try:
-            return Response(response=json.dumps(dict(token=user.token, role=user.role, username=user.username, status=200)), status=200, mimetype='application/json')
+            return Response(response=json.dumps(dict(token=user.token, role=user.role, username=user.username, id=user.id, status=200)), status=200, mimetype='application/json')
         except:
             return Response(response=json.dumps(dict(status=404)), status=404, mimetype='application/json')
 
@@ -139,8 +147,9 @@ def apiPostsUpload():
         if len(files) == 0:
             file = None
             files = None
-
-    postToSave = Posts(leiras = leiras, hatarido = hatarido, hatarido_kod = hatarido_kod)
+            
+    user = Users.query.filter(Users.token == request.headers['auth']).first()
+    postToSave = Posts(leiras = leiras, hatarido = hatarido, hatarido_kod = hatarido_kod, users_id=user.id)
     db.session.add(postToSave)
     db.session.commit()
     post = Posts.query.order_by(desc(Posts.id)).first()
@@ -167,8 +176,13 @@ def apiPosts():
     postsDict = {'status':0, 'posts': []}
     postsQuery = Posts.query.order_by(desc(Posts.hatarido_kod)).all()
     for post in postsQuery:
-        files = os.listdir(f"{filePath}\\static\\uploads\\{post.id}")
-        postsDict['posts'].append(dict(id=post.id, leiras=post.leiras, hatarido=str(post.hatarido), hatarido_kod=post.hatarido_kod, files=files))
+        user = Users.query.filter(Users.id == post.users_id).first()
+        try:
+            files = os.listdir(f"{filePath}\\static\\uploads\\{post.id}")
+            postsDict['posts'].append(dict(id=post.id, leiras=post.leiras, hatarido=str(post.hatarido), hatarido_kod=post.hatarido_kod, files=files, author=[user.id, user.username]))
+        except FileNotFoundError:
+            pass
+            
     postsDict['status'] = 200
     return jsonify(postsDict)
 
@@ -177,7 +191,8 @@ def apiPostsId(id):
     postsDict = {'status':0, 'post': {}}
     files = os.listdir(f"{filePath}\\static\\uploads\\{id}")
     post = Posts.query.filter(Posts.id==id).order_by(desc(Posts.hatarido_kod)).first()
-    postsDict['post'] = (dict(id=post.id, leiras=post.leiras, hatarido=str(post.hatarido), hatarido_kod=post.hatarido_kod, files=files))
+    user = Users.query.filter(Users.id == post.users_id).first()
+    postsDict['post'] = (dict(id=post.id, leiras=post.leiras, hatarido=str(post.hatarido), hatarido_kod=post.hatarido_kod, files=files, author=[user.id, user.username]))
     postsDict['status'] = 200
     return jsonify(postsDict)
 
@@ -191,11 +206,19 @@ def appRouteIdFile(id, fileName):
 
 @app.route('/api/posts/<id>/file/<fileName>/delete', methods=['get', 'delete']) #delete
 def apiPostsIdFileFilenameDelete(id, fileName):
+    
     error = auth(request.headers['auth'], ['admin', 'editor'])
     if error != None:
         return error
+    user = Users.query.filter(Users.token == request.headers['auth']).first()
+    post = Posts.query.filter(Posts.id == id).first()
+    if user.role != 'admin':
+        if user.id != post.users_id:
+            print(user.role != 'admin', user.id != id)
+            return Response(response=json.dumps(dict(status=403)), status=403, mimetype='application/json')
+    
     if request.method.lower() != 'delete':
-            return Response(response=json.dumps(dict(status=405)), status=405, mimetype='application/json')
+        return Response(response=json.dumps(dict(status=405)), status=405, mimetype='application/json')
     else:
         os.remove(f'{filePath}\\static\\uploads\\{id}\\{fileName}')
         return Response(response=json.dumps(dict(status=200)), status=200, mimetype='application/json')
@@ -205,6 +228,13 @@ def apiPostsIdDelete(id):
     error = auth(request.headers['auth'], ['admin', 'editor'])
     if error != None:
         return error
+    user = Users.query.filter(Users.token == request.headers['auth']).first()
+    post = Posts.query.filter(Posts.id == id).first()
+    if user.role != 'admin':
+        if user.id != post.users_id:
+            print(user.role != 'admin', user.id != id)
+            return Response(response=json.dumps(dict(status=403)), status=403, mimetype='application/json')
+    
     if request.method.lower() != 'delete':
         return Response(response=json.dumps(dict(status=405)), status=405, mimetype='application/json')
     else:
@@ -222,14 +252,20 @@ def apiPostsEdit():
     if error != None:
         return error
     
+    id = request.form['eid']
+    user = Users.query.filter(Users.token == request.headers['auth']).first()
+    post = Posts.query.filter(Posts.id == id).first()
+    if user.role != 'admin':
+        if user.id != post.users_id:
+            print(user.role != 'admin', user.id != id)
+            return Response(response=json.dumps(dict(status=403)), status=403, mimetype='application/json')
+    
     if request.method.lower() != 'post':
         return Response(response=json.dumps(dict(status=405)), status=405, mimetype='application/json')
     else:
         leiras = request.form['eleiras']
         hatarido = datetime.strptime(request.form['ehatarido'], '%Y-%m-%d')
         hatarido_kod = hatarido.timestamp()+89580 #23:59
-        
-        id = request.form['eid']
         
 
         files = request.files.getlist('efile')

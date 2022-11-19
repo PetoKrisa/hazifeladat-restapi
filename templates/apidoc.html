@@ -145,6 +145,7 @@
     "token": "4280e2bc-6fa3-4bf6-bc39-51976237c618",
     "role": "user",
     "username": "Felhasznalo1"
+    "id": 5,
     "status": 200,
     
 }</code>
@@ -156,6 +157,10 @@
                 <code>{
     "posts": [
         {
+        "author": [
+            1,
+            "admin"
+        ],
         "files": [
             "file1.mp4",
             "file2.zip",
@@ -167,6 +172,10 @@
         },
 
         {
+        "author": [
+            2,
+            "editor1"
+        ],
         "files": [
             "file1.png"
         ],
@@ -184,6 +193,10 @@
             <p>Vissza küldi <span class="font-monospace">post.id</span> id-jű post adatait JSON formátumban</p>
             <code>{
 "post": {
+    "author": [
+        1,
+        "admin"
+    ],
     "files": [
         "file1.mp4",
         "file2.zip",
