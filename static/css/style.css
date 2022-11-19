@@ -218,6 +218,15 @@ h3{
     word-break: break-all;
 }
 
+progress.visually-hidden{
+    max-width: 10% !important;
+}
+
+progress{
+    width: 100%;
+    transition: 2s;
+}
+
 @keyframes fade-in{
     from{
         opacity: 0;

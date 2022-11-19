@@ -14,7 +14,7 @@
     <dialog id="uploadPopup" class="">
         <form action="javascript:void(0)" method="post" enctype="multipart/form-data" id="uploadForm" class="needs-validation">
             <h4>Feltöltés</h4>
-        
+
             <label class="form-label" for="leiras">Leírás: </label>
             <textarea  class="form-control" name="leiras" id="leiras" cols="45" rows="5" required></textarea>
             <br>
@@ -23,6 +23,7 @@
             <hr>
             <label class="form-label" for="file">Csatolt fileok (nem kötelező): </label>
             <input class="form-control" type="file" name="file" id="file" multiple>
+            <progress class="w-100 mx-auto visually-hidden" value="2" max="100" id="uploadProgress"></progress>
 
             <br>
             <label class="btn btn-danger" onclick="closeUploadPopup()">Mégse</label>
@@ -59,6 +60,7 @@
             <br>
             <label class="form-label" for="efile">Csatolt fileok (nem kötelező): </label>
             <input class="form-control" type="file" name="efile" id="efile" multiple>
+            <progress class="w-100 mx-auto visually-hidden" value="2" max="100" id="editProgress"></progress>
             <input type="number" readonly id="eid" name="eid" style="overflow: none; height: 0px; user-select:none; opacity: 0; cursor: default;">
             <br>
             <label class="btn btn-danger" onclick="closeEditPopup()">Mégse</label>

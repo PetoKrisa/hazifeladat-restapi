@@ -144,11 +144,35 @@ function closeUploadPopup(){
 }
 function upload(){
     const uploadForm = new FormData(document.getElementById("uploadForm"))
-    fetch('/api/posts/upload', {method: 'post', body: uploadForm, headers: {'auth': localStorage.token}})
-    .then(d=>{
+    //fetch('/api/posts/upload', {method: 'post', body: uploadForm, headers: {'auth': localStorage.token}})
+
+    const request = new XMLHttpRequest()
+    uploadProgress = document.getElementById('uploadProgress')
+
+    fileSelector = document.getElementById("file").files
+    contentLength = 0
+    for(let i = 0; i < fileSelector.length;i++){
+        contentLength = contentLength + fileSelector[i].size
+    }
+    contentLength = contentLength
+
+    request.open('POST', '/api/posts/upload')
+    request.setRequestHeader('auth', localStorage.token)
+    request.addEventListener('loadstart', (e)=>{
+        uploadProgress.classList.remove('visually-hidden')
+        uploadProgress.value = 0
+    })
+    request.addEventListener('load', ()=>{
+        uploadProgress.classList.add('visually-hidden')
         closeUploadPopup()
         generateTable()
+    }) 
+    request.upload.addEventListener('progress', (e)=>{
+        console.log(Math.floor((e.loaded/contentLength)*100), e.loaded, contentLength)
+        uploadProgress.value = Math.floor((e.loaded/contentLength)*100)
     })
+    request.send(uploadForm)
+        
 }
 
 function openDelPopup(e){
@@ -185,12 +209,36 @@ function closeEditPopup(){
 }
 
 function edit(){
+    console.log(document.getElementById('eid').value)
     const editForm = new FormData(document.getElementById("editForm"))
-    fetch('/api/posts/edit', {method: 'post', body: editForm, headers: {'auth': localStorage.token}})
-    .then(d=>{
+    const request = new XMLHttpRequest()
+    
+
+    editProgress = document.getElementById('editProgress')
+
+    fileSelector = document.getElementById("efile").files
+    contentLength = 0
+    for(let i = 0; i < fileSelector.length;i++){
+        contentLength = contentLength + fileSelector[i].size
+    }
+    contentLength = contentLength
+
+    request.open('POST', '/api/posts/edit')
+    request.setRequestHeader('auth', localStorage.token)
+    request.addEventListener('loadstart', (e)=>{
+        editProgress.classList.remove('visually-hidden')
+        editProgress.value = 0
+    })
+    request.addEventListener('load', ()=>{
+        editProgress.classList.add('visually-hidden')
         closeEditPopup()
         generateTable()
+    }) 
+    request.upload.addEventListener('progress', (e)=>{
+        console.log(Math.floor((e.loaded/contentLength)*100), e.loaded, contentLength)
+        editProgress.value = Math.floor((e.loaded/contentLength)*100)
     })
+    request.send(editForm)
 }
 
 function openPostPopup(e){
