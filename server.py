@@ -14,9 +14,19 @@ import flask_admin
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.menu import MenuLink
 import random
+from uuid import uuid4
 
 filePath = os.path.realpath(__file__)
 filePath = filePath.replace('\\server.py', '')
+
+def auth(_auth, _roles):
+    user = Users.query.filter(Users.token == _auth).all()
+    if len(user) < 1:
+        return Response(response=json.dumps(dict(status=401)), status=401, mimetype='application/json')
+    elif user[0].role not in _roles:
+        return Response(response=json.dumps(dict(status=403)), status=403, mimetype='application/json')
+    else:
+        return None
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'KutyaFasz123'
@@ -34,18 +44,32 @@ class Posts(db.Model):
     leiras = db.Column(db.String, nullable=False)
     hatarido = db.Column(db.Date, nullable=False)
     hatarido_kod = db.Column(db.Integer, nullable=False)
+    users_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    
+    def __repr__(self):
+        return f'Post: {self.id}'
+    
+class Users(db.Model):
+    id = db.Column(db.Integer, primary_key=True, unique=True, autoincrement=True)
+    token = db.Column(db.String, unique=True, nullable=False)
+    username = db.Column(db.String, unique=True, nullable=False)
+    password = db.Column(db.String, nullable=False)
+    role = db.Column(db.String)
+    posts = db.relationship('Posts', backref='users')
 
     def __repr__(self):
         return f'Post: {self.id}'
 
+roles = {1: 'user', 2: 'editor', 3: 'admin'}
+
 admin.add_view(ModelView(Posts, db.session))
+admin.add_view(ModelView(Users, db.session))
 admin.add_link(MenuLink(name='Site', url='/'))
 
 @app.before_request
-def tokenGenerator():
+def underAttackMode():
     #return Response(response="418 -  I'm a teapot", status=418)
-    if 'token' not in session.keys():
-        session['token'] = f'{randint(1000,9999)}-{randint(1000,9999)}'
+    return
 
 
 @app.route('/favicon.ico')
@@ -61,20 +85,49 @@ def api():
 def apiDocs():
     return render_template('apidoc.html')
 
-@app.route('/api/session')
-def apiSession():
-    return jsonify({'token': f'{session["token"]}'})
+#api users
+@app.route('/api/users/add') #get
+def apiUsersAdd():
+    try:
+        username = request.args['user']
+        password = request.args['pass']
+        role = request.args['role']
+        
+        if role not in roles.values():
+            return Response(response=json.dumps(dict(status=406)), status=406, mimetype='application/json')
+    except:
+        return Response(response=json.dumps(dict(status=406)), status=406, mimetype='application/json')
+    
+    hashPassword = hashlib.sha256(password.encode()).hexdigest()
+    token = str(uuid4())
+    db.session.add(Users(username=username, password=hashPassword, token=token, role=role))
+    db.session.commit()
+    return Response(response=json.dumps(dict(status=200)), status=200, mimetype='application/json')
 
-@app.route('/api/session/reset', methods=['POST', 'GET']) #post
-def apiSessionReset():
+@app.route('/api/users/login', methods=['GET', 'POST']) #post
+def apiSessionLogin():
     if request.method.lower() != 'post':
         return Response(response=json.dumps(dict(status=405)), status=405, mimetype='application/json')
     else:
-        session.clear()
-        return redirect('/api/session')
+        username = request.form['username']
+        password = request.form['password']
+        hashPassword = hashlib.sha256(password.encode()).hexdigest()
+        
+        user = Users.query.filter(Users.password == hashPassword, Users.username == username).first()
+
+        try:
+            return Response(response=json.dumps(dict(token=user.token, role=user.role, username=user.username, status=200)), status=200, mimetype='application/json')
+        except:
+            return Response(response=json.dumps(dict(status=404)), status=404, mimetype='application/json')
 
 @app.route('/api/posts/upload', methods=['POST', 'GET']) #post
 def apiPostsUpload():
+
+    error = auth(request.headers['auth'], ['admin', 'editor'])
+    if error != None:
+        return error
+    
+    
     if request.method == 'POST':
         leiras = request.form['leiras']
         hatarido = datetime.strptime(request.form['hatarido'], '%Y-%m-%d')
@@ -138,6 +191,9 @@ def appRouteIdFile(id, fileName):
 
 @app.route('/api/posts/<id>/file/<fileName>/delete', methods=['get', 'delete']) #delete
 def apiPostsIdFileFilenameDelete(id, fileName):
+    error = auth(request.headers['auth'], ['admin', 'editor'])
+    if error != None:
+        return error
     if request.method.lower() != 'delete':
             return Response(response=json.dumps(dict(status=405)), status=405, mimetype='application/json')
     else:
@@ -146,6 +202,9 @@ def apiPostsIdFileFilenameDelete(id, fileName):
 
 @app.route('/api/posts/<id>/delete', methods=['GET', 'DELETE']) #delete
 def apiPostsIdDelete(id):
+    error = auth(request.headers['auth'], ['admin', 'editor'])
+    if error != None:
+        return error
     if request.method.lower() != 'delete':
         return Response(response=json.dumps(dict(status=405)), status=405, mimetype='application/json')
     else:
@@ -157,58 +216,65 @@ def apiPostsIdDelete(id):
             pass
         return Response(response=json.dumps(dict(status=200)), status=200, mimetype='application/json')
 
-@app.route('/api/posts/edit', methods=['GET', 'POST'])
+@app.route('/api/posts/edit', methods=['GET', 'POST']) #post
 def apiPostsEdit():
-        
-    leiras = request.form['eleiras']
-    hatarido = datetime.strptime(request.form['ehatarido'], '%Y-%m-%d')
-    hatarido_kod = hatarido.timestamp()+89580 #23:59
+    error = auth(request.headers['auth'], ['admin', 'editor'])
+    if error != None:
+        return error
     
-    id = request.form['eid']
-    
+    if request.method.lower() != 'post':
+        return Response(response=json.dumps(dict(status=405)), status=405, mimetype='application/json')
+    else:
+        leiras = request.form['eleiras']
+        hatarido = datetime.strptime(request.form['ehatarido'], '%Y-%m-%d')
+        hatarido_kod = hatarido.timestamp()+89580 #23:59
+        
+        id = request.form['eid']
+        
 
-    files = request.files.getlist('efile')
-        
-    if len(files) == 0:
-        files = None
+        files = request.files.getlist('efile')
+            
+        if len(files) == 0:
+            files = None
 
-    try:
-        deleteFile = request.form['deleteFile']
-    except:
-        deleteFile = 'off'
-        
-    if deleteFile == 'on':
         try:
-            shutil.rmtree(f'{filePath}\\static\\uploads\\{id}')
+            deleteFile = request.form['deleteFile']
         except:
-            pass
-        
-    if len(files) != 0:
-        try:
-            os.mkdir(f"{filePath}\\static\\uploads\\{id}")
-        except:
-            pass
-        
-        for save in files:
+            deleteFile = 'off'
+            
+        if deleteFile == 'on':
             try:
-                with open(f"{filePath}\\static\\uploads\\{id}\\{save.filename.replace(' ', '_')}", 'wb') as f:
-                    f.write(save.read())
+                shutil.rmtree(f'{filePath}\\static\\uploads\\{id}')
             except:
                 pass
+            
+        if len(files) != 0:
+            try:
+                os.mkdir(f"{filePath}\\static\\uploads\\{id}")
+            except:
+                pass
+            
+            for save in files:
+                try:
+                    with open(f"{filePath}\\static\\uploads\\{id}\\{save.filename.replace(' ', '_')}", 'wb') as f:
+                        f.write(save.read())
+                except:
+                    pass
 
-    
-    post = Posts.query.filter(Posts.id == id).first()
-    
-    post.leiras = leiras
-    post.hatarido = hatarido
-    post.hatarido_kod = hatarido_kod
-    if deleteFile=='on':
-        post.file = None
-    elif len(files) != 0:
-        post.file = f"{filePath}\\static\\uploads\\{id}"
-    
-    db.session.commit()
+        
+        post = Posts.query.filter(Posts.id == id).first()
+        
+        post.leiras = leiras
+        post.hatarido = hatarido
+        post.hatarido_kod = hatarido_kod
+        if deleteFile=='on':
+            post.file = None
+        elif len(files) != 0:
+            post.file = f"{filePath}\\static\\uploads\\{id}"
+        
+        db.session.commit()
     return redirect('/')
+
 
 
 #pages
@@ -223,4 +289,4 @@ def handle_context():
 with app.app_context():
     if __name__ == '__main__':
         db.create_all()
-        app.run(host='0.0.0.0', port=80, debug=True)
+        app.run(host='0.0.0.0', port=6969, debug=True)

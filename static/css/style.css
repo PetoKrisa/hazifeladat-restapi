@@ -11,8 +11,19 @@
     --glow: rgba(255,255,255,0.3);
     --border-radius: 6px;
 
+    --show: none;
+    --show-td: none;
+    
     --mx: 0px;
     --my: 0px;
+}
+
+.role{
+    display: var(--show) !important;
+}
+
+td.role, th.role{
+    display: var(--show-td) !important;
 }
 
 ::-webkit-scrollbar{
@@ -198,9 +209,13 @@ code{
 }
 
 .docs-list li{
-    max-width: fit-content;
+
     background-color: var(--fg-active) !important;
     color: var(--text-active) !important;
+}
+
+h3{
+    word-break: break-all;
 }
 
 @keyframes fade-in{

@@ -64,17 +64,18 @@
                 </a>
                 <div class="collapse" id="api">
                     <ul>
+                        <li><a href="#api-leirasa" class="text-decoration-none"><h6>Leírása</h6></a></li>
+                        <li><a href="#api-hibakodok" class="text-decoration-none"><h6>Hibakódok</h6></a></li>
                         <li><a href="#/api" class="text-decoration-none"><h6>/api</h6></a></li>
                         <li><a href="#/api/docs" class="text-decoration-none"><h6>/api/docs</h6></a></li>
                     </ul>
                 </div>
-                <a class="text-decoration-none btn-primary" data-bs-toggle="collapse" href="#session" role="button">
-                    <h4>Session</h4>
+                <a class="text-decoration-none btn-primary" data-bs-toggle="collapse" href="#users" role="button">
+                    <h4>Users</h4>
                 </a>
-                <div class="collapse" id="session">
+                <div class="collapse" id="users">
                     <ul>
-                        <li><a href="#/session" class="text-decoration-none"><h6>/session</h6></a></li>
-                        <li><a href="#/session/reset" class="text-decoration-none"><h6>/session/reset</h6></a></li>
+                        <li><a href="#/users/login" class="text-decoration-none"><h6>/users/login</h6></a></li>
                     </ul>
                 </div>
                 <a class="text-decoration-none btn-primary" data-bs-toggle="collapse" href="#posts" role="button">
@@ -98,6 +99,32 @@
             <div id="doc-main-content" class="col-lg-9 col-12">
                 <!--api-->
                 <h1>API</h1>
+                <h3 id="api-leirasa">Leírása</h3>
+                <p>Ezen az oldalon mindent meg lehet csinálni a <span class="font-monospace">REST API</span> -al.</p>
+                <p>Minden olyan request-hez amihez be kell lennie jelentkezve a felhasználónak (vendég profil nem tudja megcsinálni),
+                kell egy <span class="font-monospace">auth</span> nevű header a requestbe, ami a felhasználó tokenét tartalmazza. </p>
+                
+                <br>
+                <h3 id="api-hibakodok">Hibakódok</h3>
+                <p>Minden olyan requestben aminek JSON formátumú responsa van, lesz egy <span class="font-monospace">status</span> nevű kulcs, aminek az értéke egy szám.
+                Ez egy HTTP kód.</p>
+                <p>Hibakódok és jelentésük:</p>
+                <ul class="docs-list list-group">
+                    <li class="list-group-item">200 &rarr; OK: Nincs hiba</li>
+                    <li class="list-group-item">204 &rarr; No Content: Az elért útvonal létezik, de nincs tartalma. Pl.: Egy <a href="/posts">post</a>
+                    -nak nincsenek filejai, de megpróbáljuk elérni</li>
+                    <li class="list-group-item">401 &rarr; Unauthorized: A requestben vagy nincs <span class="font-monospace">auth</span> header,
+                     vagy hibás</li>
+                    <li class="list-group-item">403 &rarr; Forbidden: A requestben van egy elfogadható <span class="font-monospace">auth</span> header,
+                    de a megadott felhasználónak nincsenek megfelelő jogosultságai</li>
+                    <li class="list-group-item">404 &rarr; Not Found: A keresett útvonal, post, vagy felhasználó nem található</li>
+                    <li class="list-group-item">405 &rarr; Method Not Allowed: A request-et nem a megfelelő method-dal küldték. 
+                        A dokumentációban minden útvonal mellé le van írva a request method-ja</li>
+                    <li class="list-group-item">418 &rarr; I'm a teapot: The server refuses the attempt to brew coffee with a teapot.</li>
+                    <li class="list-group-item">500 &rarr; Internal Server Error: A backend nem műkdöik</li>
+                </ul>
+
+                <br>
                 <h3 id="/api">/api<span class="get">GET</span></h3>
                 <p>Az <span class="monospace">/api</span> csak egy JSON visszaigazolást küld, egy status kóddal, és egy verzió számmal</p>
                 <code>{
@@ -108,20 +135,21 @@
                 <h3 id="/api/docs">/api/docs<span class="get">GET</span></h3>
                 <p>Ez a link, átirányít erre az oldalra</p>
 
-                <!--session-->
+                <!--users-->
                 <hr>
                 <p class="text-muted">Innentől minden link domain.com/api -al kezdődik</p>
-                <h1>Session</h1>
-                <h3 id="/session">/session<span class="get">GET</span></h3>
-                <p>Használaton kívüli. JSON formátumban visszaküldi a sessionben tárolt adatokat. Most csak a tokent</p>
+                <h1>Users</h1>
+                <h3 id="/users/login">/users/login<span class="post">POST</span></h3>
+                <p>Ha jó a jelszó és a felhasználónév kombináció, akkor visszaküldi a bejelentkezett fiók adatait JSON formátumban</p>
                 <code>{
-    "token": "1364-9268"
+    "token": "4280e2bc-6fa3-4bf6-bc39-51976237c618",
+    "role": "user",
+    "username": "Felhasznalo1"
+    "status": 200,
+    
 }</code>
-                <br>
-                <h3 id="/session/reset">/session/reset<span class="post">POST</span></h3>
-                <p>Generál egy új tokent. Nem küld vissza adatot, csak átírányít a /session -re</p>
-
                 <!--Posts-->
+                <hr>
                 <h1>Posts</h1>
                 <h3 id="/posts">/posts<span class="get">GET</span></h3>
                 <p>Vissza küldi az összes postot az adatbázisból JSON formátumban</p>

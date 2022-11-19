@@ -25,8 +25,8 @@ function generateTable(){
             <td><p>${safeText(posts[e].leiras)}</p></td>
             <td><p>${posts[e].hatarido}</p></td>
             <td><p><i onclick="openPostPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-magnifying-glass"></i></p></td>
-            <td><i onclick="openDelPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-trash-can"></i></td>
-            <td><i onclick="openEditPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-pen"></i></td>
+            <td class="role"><i onclick="openDelPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-trash-can"></i></td>
+            <td class="role"><i onclick="openEditPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-pen"></i></td>
             </tr>
             `
         } else if(posts[e].hatarido_kod > Date.now()/1000){
@@ -38,8 +38,8 @@ function generateTable(){
             <td><p>${safeText(posts[e].leiras)}</p></td>
             <td><p>${posts[e].hatarido}</p></td>
             <td><p><i onclick="openPostPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-magnifying-glass"></i></p></td>
-            <td><i onclick="openDelPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-trash-can"></i></td>
-            <td><i onclick="openEditPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-pen"></i></td>
+            <td class="role"><i onclick="openDelPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-trash-can"></i></td>
+            <td class="role"><i onclick="openEditPopup(this)" data-id="${posts[e].id}" class="fa-solid fa-pen"></i></td>
             </tr>
             `
 
@@ -86,13 +86,6 @@ function updateVisinilityButton(){
 }
 updateVisinilityButton()
 
-function openUploadPopup(){
-    document.getElementById("uploadPopup").showModal()
-}
-function closeUploadPopup(){
-    document.getElementById("uploadPopup").close()
-}
-
 function theme(){
     let tables = document.getElementsByClassName('table')
     let root = document.querySelector(':root')
@@ -135,8 +128,18 @@ function setTheme(){
 //load theme on startup
 theme()
 
-function download(e){
-    window.open(`/api/posts/${e.dataset.id}/file`, '_blank')
+
+function openUploadPopup(){
+    document.getElementById("uploadPopup").showModal()
+}
+function closeUploadPopup(){
+    document.getElementById("uploadPopup").close()
+}
+function upload(){
+    const uploadForm = new FormData(document.getElementById("uploadForm"))
+    fetch('/api/posts/upload', {method: 'post', body: uploadForm, headers: {'auth': localStorage.token}})
+    closeUploadPopup()
+    generateTable()
 }
 
 function openDelPopup(e){
@@ -148,7 +151,7 @@ function closeDelPopup(){
 }
 
 function del(e){
-    fetch(`/api/posts/${e.dataset.id}/delete`, {method: 'delete'})
+    fetch(`/api/posts/${e.dataset.id}/delete`, {method: 'delete', headers: {'auth': localStorage.token}})
     closeDelPopup()
     generateTable()
     generateTable()
@@ -172,6 +175,12 @@ function closeEditPopup(){
     document.getElementById('editPopup').close()
 }
 
+function edit(){
+    const editForm = new FormData(document.getElementById("editForm"))
+    fetch('/api/posts/edit', {method: 'post', body: editForm, headers: {'auth': localStorage.token}})
+    closeEditPopup()
+    generateTable()
+}
 
 function openPostPopup(e){
     fetch(`/api/posts/${e.dataset.id}`)
@@ -187,7 +196,7 @@ function openPostPopup(e){
             <li data-id="${r['post']['id']}" class="list-group-item">
                 ${r['post']['files'][i]}
                 
-                <i onclick="delFile(this)" data-id="${r['post']['id']}" data-file="${r['post']['files'][i]}" class="float-end fa-sharp fa-solid fa-trash"></i>
+                <i onclick="delFile(this)" data-id="${r['post']['id']}" data-file="${r['post']['files'][i]}" class="role float-end fa-sharp fa-solid fa-trash"></i>
                 <p class="float-end" >&nbsp; </p>
                 <i onclick="openFile(this)" data-id="${r['post']['id']}" data-file="${r['post']['files'][i]}" class="float-end fa-solid fa-download"></i>
                 </li>
@@ -206,10 +215,75 @@ function closePostPopup(){
 function delFile(e){
     pfileok = document.getElementById('pfileok')
     pfileok.removeChild(e.closest('li'))
-    fetch(`/api/posts/${e.dataset.id}/file/${e.dataset.file}/delete`, {method: 'delete'})
+    fetch(`/api/posts/${e.dataset.id}/file/${e.dataset.file}/delete`, {method: 'delete', headers: {'auth': localStorage.token}})
 
 }   
 
 function openFile(e){
     window.open(`/api/posts/${e.dataset.id}/file/${e.dataset.file}`, '_blank')
+}
+
+function isLoggedIn(){
+    let root = document.querySelector(':root')
+    cs = getComputedStyle(root)
+    if (localStorage.getItem('login')=='true'){
+        document.getElementById('login-btn').classList.add('visually-hidden')
+
+        document.getElementById('logout-btn').classList.remove('visually-hidden')
+        document.getElementById('user').classList.remove('visually-hidden')
+
+        document.getElementById('user').innerHTML = `&nbsp;&#x2022;&nbsp;${localStorage.username}`
+
+        if (localStorage.role == 'editor' || localStorage.role == 'admin' ){
+            root.style.setProperty('--show', 'inline-block')
+            root.style.setProperty('--show-td', 'table-cell')
+        }
+    } else{
+        document.getElementById('logout-btn').classList.add('visually-hidden')
+        document.getElementById('user').classList.add('visually-hidden')
+
+        document.getElementById('login-btn').classList.remove('visually-hidden')
+
+        document.getElementById('user').innerHTML = ''
+
+        root.style.setProperty('--show', 'none')
+        root.style.setProperty('--show-td', 'none')
+
+    }
+}
+
+function openLoginPopup(){
+    document.getElementById('loginPopup').showModal()
+}
+function closeLoginPopup(){
+    document.getElementById('loginPopup').close()
+}
+
+function login(){
+    const loginForm = new FormData(document.getElementById("loginForm"))
+
+    fetch('/api/users/login', {body: loginForm, method: 'post'})
+    .then(r=>r.json())
+    .then(d=>{
+        if(d['status']==404){
+            document.getElementById("login-alert").classList.remove("visually-hidden")
+        } else{
+            document.getElementById("login-alert").classList.add("visually-hidden")
+
+            localStorage.login = 'true'
+            localStorage.token = d['token']
+            localStorage.role = d['role']
+            localStorage.username = d['username']
+
+            closeLoginPopup()
+            isLoggedIn()
+        }
+    })
+}
+
+function logout(){
+    localStorage.login = 'false'
+    localStorage.token = null
+    localStorage.role = null
+    isLoggedIn()
 }

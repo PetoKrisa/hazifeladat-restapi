@@ -9,10 +9,10 @@
     <link rel="stylesheet" href="../static/css/style.css">
     <title>Házi</title>
 </head>
-<body>
+<body onload="isLoggedIn()">
     <!--upload popup-->
     <dialog id="uploadPopup" class="">
-        <form action="/api/posts/upload" method="post" enctype="multipart/form-data" id="uploadForm" class="needs-validation">
+        <form action="javascript:void(0)" method="post" enctype="multipart/form-data" id="uploadForm" class="needs-validation">
             <h4>Feltöltés</h4>
         
             <label class="form-label" for="leiras">Leírás: </label>
@@ -26,7 +26,7 @@
 
             <br>
             <label class="btn btn-danger" onclick="closeUploadPopup()">Mégse</label>
-            <input type="submit" value="Kész" class="btn btn-success">
+            <input onclick="upload()" type="submit" value="Kész" class="btn btn-success">
         </form>
     
         
@@ -44,7 +44,7 @@
 
     <!--edit popup-->
     <dialog id="editPopup" class="">
-        <form action="/api/posts/edit" method="post" enctype="multipart/form-data" id="uploadForm" class="needs-validation">
+        <form action="javascript:void(0)" method="post" enctype="multipart/form-data" id="editForm" class="needs-validation">
             <h4>Szerkesztés</h4>
         
             <label class="form-label" for="leiras">Leírás: </label>
@@ -62,7 +62,7 @@
             <input type="number" readonly id="eid" name="eid" style="overflow: none; height: 0px; user-select:none; opacity: 0; cursor: default;">
             <br>
             <label class="btn btn-danger" onclick="closeEditPopup()">Mégse</label>
-            <input id="editBtn" type="submit" value="Kész" class="btn btn-success">
+            <input onclick="edit()" id="editBtn" type="submit" value="Kész" class="btn btn-success">
         </form>    
     </dialog>
 
@@ -82,18 +82,44 @@
     
     </dialog>
 
+    <dialog id="loginPopup" class="">
+        <h4>Bejelentkezés</h4>
+        
+        <form id="loginForm" action="javascript:void(0)" enctype="multipart/form-data" method="post">
+            <p id="login-alert" class="alert alert-danger visually-hidden">Hibás felhasználónév vagy jelszó!</p>
+            <label class="form-label" for="username">Felhasználónév</label>
+            <input class="form-control" id="username" name="username" type="username" placeholder="Felhasználónév">
+            <label class="form-label" for="password">Jelszó</label>
+            <br>
+            <input class="form-control" id="password" name="password" type="password" placeholder="Jelszó">
+           
+        </form>
+        <br>
+        <label class="btn btn-danger" onclick="closeLoginPopup()">Mégse</label>
+        <label class="btn btn-success" onclick="login()">Bejelentkezés</label>
+    
+    </dialog>
+
+
     <br>
     <div class="container w-100">
         <!--"navbar"-->
         <div id="navbar" class="container-fluid">
-            <p class="pointer float-start text-decoration-underline" onclick="openUploadPopup()">Hozzáadás</p>
-            <p class="float-start nav-space">&nbsp;&#x2022;&nbsp;</p>
+            <p class="role pointer float-start text-decoration-underline" onclick="openUploadPopup()">Hozzáadás</p>
+            <p class="role float-start nav-space">&nbsp;&#x2022;&nbsp;</p>
             <p class="float-start" id="postCounter"></p>
             <p class="float-start nav-space">&nbsp;&#x2022;&nbsp;</p>
 
             <input id="visibility" type="checkbox" class="form-check-input pointer float-start text-decoration-underline" value="on" onclick="changeVisibility(this)">
             <label for="visibility" class="form-check-label">&nbsp;Lejárt</label>
+            
+            
             <i onclick="setTheme()" style="float: right !important;" class="fa-sharp fa-solid fa-circle-half-stroke float-end"></i>
+            <p class="float-end nav-space">&nbsp;</p>
+            <p id="user" class="account float-end">&nbsp;&#x2022;&nbsp;</p>
+            <p id="logout-btn" onclick="logout()" class="pointer float-end text-decoration-underline">logout</p>
+            <p id="login-btn" onclick="openLoginPopup()" class="pointer float-end text-decoration-underline">login</p>
+            
         </div>
 
        
@@ -105,8 +131,8 @@
                     <th style="width: 100%;">Leírás</th>
                     <th>Határidő&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
                     <th>&nbsp;</th>
-                    <th>&nbsp;</th>
-                    <th>&nbsp;</th>
+                    <th class="role" >&nbsp;</th>
+                    <th class="role" >&nbsp;</th>
                 </tr>   
             </thead>
             <tbody id="tbody">
