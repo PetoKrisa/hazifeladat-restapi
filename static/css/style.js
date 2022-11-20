@@ -1,3 +1,9 @@
+const sio = io()
+
+sio.on('update', ()=>{
+    generateTable()
+})
+
 function safeText(text){
     text = text.replaceAll('<', '&lt;').replaceAll('>', '&gt;')
     return text

@@ -70,14 +70,31 @@
                         <li><a href="#/api/docs" class="text-decoration-none"><h6>/api/docs</h6></a></li>
                     </ul>
                 </div>
+
+                <a class="text-decoration-none btn-primary" data-bs-toggle="collapse" href="#socketio" role="button">
+                    <h4>SocketIO</h4>
+                </a>
+                <div class="collapse" id="socketio">
+                    <ul>
+                        <li><a href="#socketio-leirasa" class="text-decoration-none"><h6>Leírása</h6></a></li>
+                    </ul>
+                    <ul>
+                        <li><a href="#socketio-update" class="text-decoration-none"><h6>'update'</h6></a></li>
+                    </ul>
+                </div>
+
                 <a class="text-decoration-none btn-primary" data-bs-toggle="collapse" href="#users" role="button">
                     <h4>Users</h4>
                 </a>
                 <div class="collapse" id="users">
                     <ul>
+                        <li><a href="#/users" class="text-decoration-none"><h6>/users</h6></a></li>
+                        <li><a href="#/users/{user.id}" class="text-decoration-none"><h6>/users/{user.id}</h6></a></li>
                         <li><a href="#/users/login" class="text-decoration-none"><h6>/users/login</h6></a></li>
+
                     </ul>
                 </div>
+
                 <a class="text-decoration-none btn-primary" data-bs-toggle="collapse" href="#posts" role="button">
                 <h4>Posts</h4>
                 </a>
@@ -135,10 +152,57 @@
                 <h3 id="/api/docs">/api/docs<span class="get">GET</span></h3>
                 <p>Ez a link, átirányít erre az oldalra</p>
 
+                <!--socketio-->
+                <hr>
+
+                <h1>SocketIO</h1>
+                <h3 id="socketio-leirasa">Leírása</h3>
+                <p>A SocketIO egy olyan library, ami különleges websocketeket tud küldeni. Ezek a socketek nem kompatibilisek a sima websocketekkel, 
+                    viszont sokkal egyszerűbb használni. A dokumentációban azok az eventek vannak amiket a szerver emitel.</p>
+                
+                    <br>
+                <h3 id="socketio-update">'update'</h3>
+                <p>Az <span class="font-monospace">'update'</span> event akkor van elküldve, amikor valamit feltöltünk, törlünk vagy szerkesztünk, és frissíteni kell az oldalon a táblázatot. 
+                    A sockettel nem jön semmi adat.</p>
+                
+
                 <!--users-->
                 <hr>
                 <p class="text-muted">Innentől minden link domain.com/api -al kezdődik</p>
                 <h1>Users</h1>
+                
+                <h3 id="/users">/users<span class="get">GET</span></h3>
+                <p>Vissza küldi az összes user publikus adatait JSON formátumban</p>
+                <code>{
+    "status": 200,
+    "users": [
+        {
+        "id": 1,
+        "role": "admin",
+        "username": "admin"
+        },
+        
+        {
+        "id": 6,
+        "role": "admin",
+        "username": "mauminimus"
+        }
+    ]
+}}</code>
+
+                <br>
+                <h3 id="/users/{user.id}">/users/{user.id}<span class="get">GET</span></h3>
+                <p>Vissza küldi a <span class="font-monospace">user.id</span> id-jű user publikus adatait JSON formátumban</p>
+                <code>{
+    "status": 200,
+    "user": {
+        "id": 6,
+        "role": "admin",
+        "username": "mauminimus"
+    }
+}</code>
+
+                <br>
                 <h3 id="/users/login">/users/login<span class="post">POST</span></h3>
                 <p>Ha jó a jelszó és a felhasználónév kombináció, akkor visszaküldi a bejelentkezett fiók adatait JSON formátumban</p>
                 <code>{
@@ -244,6 +308,11 @@
             </ul>
 
             <br>
+            
+            <hr>
+            <p>És hát igazából így, ennyi..</p>
+
+            <br>    
         </div>
     </div>
 </div>

@@ -1,6 +1,6 @@
 import os
 import shutil
-from io import BytesIO
+#from io import BytesIO
 import flask
 import hashlib
 from sqlalchemy import or_, desc
@@ -10,9 +10,11 @@ from flask import Flask, flash, jsonify, redirect, url_for, render_template, sen
 import time
 from random import randint
 import json
-import flask_admin
-from flask_admin.contrib.sqla import ModelView
-from flask_admin.menu import MenuLink
+import eventlet
+import flask_socketio
+#import flask_admin
+#from flask_admin.contrib.sqla import ModelView
+#from flask_admin.menu import MenuLink
 import random
 from uuid import uuid4
 
@@ -27,6 +29,16 @@ def auth(_auth, _roles):
         return Response(response=json.dumps(dict(status=403)), status=403, mimetype='application/json')
     else:
         return None
+    
+def role(_userToken, _postId, _roles):
+    user = Users.query.filter(Users.token == _userToken).first()
+    post = Posts.query.filter(Posts.id == _postId).first()
+    if user.role not in _roles:
+        if user.id != post.users_id:
+            print(user.role != 'admin', user.id != id)
+            return Response(response=json.dumps(dict(status=403)), status=403, mimetype='application/json')
+    else:
+        return None
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'KutyaFasz123'
@@ -36,8 +48,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///restapi.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JSON_AS_ASCII'] = False
 
+socketio = flask_socketio.SocketIO(app)
+
 db = SQLAlchemy(app)
-admin = flask_admin.Admin(app, name='API')
 #databases
 class Posts(db.Model):
     id = db.Column(db.Integer, primary_key=True, unique=True, autoincrement=True)
@@ -62,10 +75,6 @@ class Users(db.Model):
 
 roles = {1: 'user', 2: 'editor', 3: 'admin'}
 
-admin.add_view(ModelView(Posts, db.session))
-admin.add_view(ModelView(Users, db.session))
-admin.add_link(MenuLink(name='Site', url='/'))
-
 @app.before_request
 def underAttackMode():
     #return Response(response="418 -  I'm a teapot", status=418)
@@ -77,6 +86,10 @@ def favicon():
     return send_file(f'{filePath}\\static\\assets\\favicon.ico')
 
 #api
+@socketio.on('connect')
+def connected():
+    print(f'id: {request.sid}; sio connected')
+
 @app.route('/api')
 def api():
     return jsonify({'status': 200, 'version': 1})
@@ -110,7 +123,7 @@ def apiUsersAdd():
     return Response(response=json.dumps(dict(status=200)), status=200, mimetype='application/json')
 
 @app.route('/api/users/login', methods=['GET', 'POST']) #post
-def apiSessionLogin():
+def apiUsersLogin():
     if request.method.lower() != 'post':
         return Response(response=json.dumps(dict(status=405)), status=405, mimetype='application/json')
     else:
@@ -128,13 +141,37 @@ def apiSessionLogin():
         except:
             return Response(response=json.dumps(dict(status=404)), status=404, mimetype='application/json')
 
+@app.route('/api/users')
+def apiUsers():
+    usersDict = {'status':0, 'users': []}
+    usersQuery = Users.query.all()
+    for user in usersQuery:
+        try:
+            usersDict['users'].append(dict(id=user.id, username=user.username, role=user.role))
+        except:
+            pass
+            
+    usersDict['status'] = 200
+    return jsonify(usersDict)
+
+@app.route('/api/users/<id>')
+def apiUsersId(id):
+    usersDict = {'status':0, 'user': []}
+    user = Users.query.filter(Users.id == id).first()
+    try:
+        usersDict['user'] = dict(id=user.id, username=user.username, role=user.role)
+    except:
+        pass
+            
+    usersDict['status'] = 200
+    return jsonify(usersDict)
+
+#posts
 @app.route('/api/posts/upload', methods=['POST', 'GET']) #post
 def apiPostsUpload():
-
     error = auth(request.headers['auth'], ['admin', 'editor'])
     if error != None:
         return error
-    
     
     if request.method == 'POST':
         leiras = request.form['leiras']
@@ -168,7 +205,7 @@ def apiPostsUpload():
                 pass
     db.session.commit()
             
-    
+    socketio.emit('update')
     return redirect('/')
 
 @app.route('/api/posts') #get
@@ -210,12 +247,9 @@ def apiPostsIdFileFilenameDelete(id, fileName):
     error = auth(request.headers['auth'], ['admin', 'editor'])
     if error != None:
         return error
-    user = Users.query.filter(Users.token == request.headers['auth']).first()
-    post = Posts.query.filter(Posts.id == id).first()
-    if user.role != 'admin':
-        if user.id != post.users_id:
-            print(user.role != 'admin', user.id != id)
-            return Response(response=json.dumps(dict(status=403)), status=403, mimetype='application/json')
+    error2 = role(request.headers['auth'], id, ['admin'])
+    if error2 != None:
+        return error2
     
     if request.method.lower() != 'delete':
         return Response(response=json.dumps(dict(status=405)), status=405, mimetype='application/json')
@@ -228,12 +262,9 @@ def apiPostsIdDelete(id):
     error = auth(request.headers['auth'], ['admin', 'editor'])
     if error != None:
         return error
-    user = Users.query.filter(Users.token == request.headers['auth']).first()
-    post = Posts.query.filter(Posts.id == id).first()
-    if user.role != 'admin':
-        if user.id != post.users_id:
-            print(user.role != 'admin', user.id != id)
-            return Response(response=json.dumps(dict(status=403)), status=403, mimetype='application/json')
+    error2 = role(request.headers['auth'], id, ['admin'])
+    if error2 != None:
+        return error2
     
     if request.method.lower() != 'delete':
         return Response(response=json.dumps(dict(status=405)), status=405, mimetype='application/json')
@@ -244,6 +275,7 @@ def apiPostsIdDelete(id):
             shutil.rmtree(f'{filePath}\\static\\uploads\\{id}')
         except:
             pass
+        socketio.emit('update')
         return Response(response=json.dumps(dict(status=200)), status=200, mimetype='application/json')
 
 @app.route('/api/posts/edit', methods=['GET', 'POST']) #post
@@ -309,6 +341,7 @@ def apiPostsEdit():
             post.file = f"{filePath}\\static\\uploads\\{id}"
         
         db.session.commit()
+    socketio.emit('update')
     return redirect('/')
 
 
@@ -325,4 +358,5 @@ def handle_context():
 with app.app_context():
     if __name__ == '__main__':
         db.create_all()
-        app.run(host='0.0.0.0', port=6969, debug=True)
+        #app.run(host='0.0.0.0', port=6969, debug=True)
+        socketio.run(app, host='0.0.0.0', port=6969, debug=True)
