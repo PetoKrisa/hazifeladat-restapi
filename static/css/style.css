@@ -258,13 +258,17 @@ progress{
         margin: 1px;
     }
 
+    #navbar > .float-end{
+        float: right !important;
+    }
+
     #navbar input{
         position: relative;
         top: 3px;
     }
 
     .nav-space {
-        display: none;
+        display: none !important;
     }
     
     table{

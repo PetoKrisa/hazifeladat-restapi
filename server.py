@@ -10,7 +10,8 @@ from flask import Flask, flash, jsonify, redirect, url_for, render_template, sen
 import time
 from random import randint
 import json
-import eventlet
+import gevent
+import geventwebsocket
 import flask_socketio
 #import flask_admin
 #from flask_admin.contrib.sqla import ModelView
@@ -48,7 +49,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///restapi.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JSON_AS_ASCII'] = False
 
-socketio = flask_socketio.SocketIO(app)
+socketio = flask_socketio.SocketIO(app, async_mode='gevent')
 
 db = SQLAlchemy(app)
 #databases
@@ -78,6 +79,7 @@ roles = {1: 'user', 2: 'editor', 3: 'admin'}
 @app.before_request
 def underAttackMode():
     #return Response(response="418 -  I'm a teapot", status=418)
+    print(f'{request.remote_addr} [{request.method}] - {request.url}')
     return
 
 
@@ -88,7 +90,7 @@ def favicon():
 #api
 @socketio.on('connect')
 def connected():
-    print(f'id: {request.sid}; sio connected')
+    print(f'id: {request.sid} - socket connected')
 
 @app.route('/api')
 def api():
@@ -102,7 +104,7 @@ def apiDocs():
 @app.route('/api/users/add') #get
 def apiUsersAdd():
     try:
-        if not session['admin']:
+        if request.remote_addr != '127.0.0.1':
             return Response(response=json.dumps(dict(status=403)), status=403, mimetype='application/json')
     except:
         return Response(response=json.dumps(dict(status=403)), status=403, mimetype='application/json')
@@ -132,9 +134,6 @@ def apiUsersLogin():
         hashPassword = hashlib.sha256(password.encode()).hexdigest()
         
         user = Users.query.filter(Users.password == hashPassword, Users.username == username).first()
-
-        if user.role == 'admin':
-            session['admin'] = True
         
         try:
             return Response(response=json.dumps(dict(token=user.token, role=user.role, username=user.username, id=user.id, status=200)), status=200, mimetype='application/json')
@@ -359,4 +358,4 @@ with app.app_context():
     if __name__ == '__main__':
         db.create_all()
         #app.run(host='0.0.0.0', port=6969, debug=True)
-        socketio.run(app, host='0.0.0.0', port=6969)
+        socketio.run(app, host='0.0.0.0', port=80)
