@@ -1,2 +1,3 @@
 static/uploads/*
 *.db
+!test-restapi.db
