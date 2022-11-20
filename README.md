@@ -2,5 +2,6 @@
 
 Depencies:
 - flask
-- flask-admin
 - flask-sqlalchemy
+- eventlet
+- python-socketio
