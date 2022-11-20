@@ -4,4 +4,4 @@ Depencies:
 - flask
 - flask-sqlalchemy
 - eventlet
-- python-socketio
+- flask-socketio
