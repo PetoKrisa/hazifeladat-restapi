@@ -79,7 +79,7 @@ roles = {1: 'user', 2: 'editor', 3: 'admin'}
 @app.before_request
 def underAttackMode():
     #return Response(response="418 -  I'm a teapot", status=418)
-    print(f'{request.remote_addr} [{request.method}] - {request.url}')
+    print(f'{datetime.time(datetime.now().replace(microsecond=0))}; {request.remote_addr} [{request.method}] - {request.url}')
     return
 
 

@@ -9,6 +9,26 @@ function safeText(text){
     return text
 }
 
+function isValid(form){
+
+    isInvalid = false
+    Array.from(document.getElementById(form).elements).forEach(el=>{
+
+        if (('required' in el.attributes) && (el.value == '')){
+            console.log('invalid field')
+            isInvalid = true
+        } else{
+            console.log('valid field')
+        }
+    })
+    console.log('form is invalid: ', isInvalid)
+    if (isInvalid == false){
+        return true
+    } else{
+        return false
+    }
+}
+
 function generateTable(){
     fetch('/api/posts', {method:'get'})
     .then((r)=>{return r.json()})
@@ -149,8 +169,14 @@ function closeUploadPopup(){
     document.getElementById("uploadPopup").close()
 }
 function upload(){
+
     const uploadForm = new FormData(document.getElementById("uploadForm"))
     //fetch('/api/posts/upload', {method: 'post', body: uploadForm, headers: {'auth': localStorage.token}})
+
+    
+    if (!isValid('uploadForm')){
+        return
+    }
 
     const request = new XMLHttpRequest()
     uploadProgress = document.getElementById('uploadProgress')
@@ -219,6 +245,11 @@ function edit(){
     const editForm = new FormData(document.getElementById("editForm"))
     const request = new XMLHttpRequest()
     
+    if (!isValid('editForm')){
+        return
+    }
+
+
 
     editProgress = document.getElementById('editProgress')
 
