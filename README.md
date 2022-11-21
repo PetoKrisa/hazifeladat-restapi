@@ -3,5 +3,5 @@
 Depencies:
 - flask
 - flask-sqlalchemy
-- eventlet
+- gevent
 - flask-socketio
