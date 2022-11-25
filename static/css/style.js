@@ -391,8 +391,8 @@ function login(){
 function manageOauth(){
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
-    if (urlParams.get('gitcode') != undefined){
-        fetch(`https://petokrisa.hu/api/users/oauth2/github/login?code=${urlParams.get('gitcode')}`)
+    if (urlParams.get('oauth_github') != undefined){
+        fetch(`https://petokrisa.hu/api/users/oauth2/github/login?code=${urlParams.get('oauth_github')}`)
         .then(d=>d.json())
         .then(r=>{
             localStorage.login = 'true'
@@ -412,7 +412,6 @@ function manageOauth(){
 
 function loginGithub(){
     window.location = ('https://github.com/login/oauth/authorize?client_id=6389747b48199e71b803&scope=read:user')
-    sio.emit("oauth", "github")
 }
 
 function logout(){

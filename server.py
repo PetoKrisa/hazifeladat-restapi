@@ -360,19 +360,19 @@ def apiUserOauth2GithubLogin():
         "Authorization": f"Bearer {access_token}",
         "Accept": "application/json"
     })
-    user = Users.query.filter(Users.password == '', Users.username == getUserData.json()['id']).first()
+    user = Users.query.filter(Users.password == getUserData.json()['id']).first()
     if user == None:
-        db.session.add(Users(username=getUserData.json()['id'], token=str(uuid4()), password='', role='user'))
+        db.session.add(Users(username=getUserData.json()['login'], token=str(uuid4()), password=getUserData.json()['id'], role='user'))
         db.session.commit()
-        user = Users.query.filter(Users.password == '', Users.username == getUserData.json()['id']).first()
-    return Response(response=json.dumps(dict(token=user.token, role=user.role, username=getUserData.json()['login'], id=user.id, status=200)), status=200, mimetype='application/json')
+        user = Users.query.filter(Users.password == getUserData.json()['id']).first()
+    return Response(response=json.dumps(dict(token=user.token, role=user.role, username=user.username, id=user.id, status=200)), status=200, mimetype='application/json')
 
 
 @app.route('/api/users/oauth2/github')
 def apiUserOauth2Github():
     code = request.args['code']
     
-    return redirect(f'/?gitcode={code}')
+    return redirect(f'/?oauth_github={code}')
 
 
 #pages
