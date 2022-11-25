@@ -10,7 +10,7 @@
     <title>Házi</title>
     <script src="../static/scripts/socket.io.min.js"></script>
 </head>
-<body onload="isLoggedIn()">
+<body onload="isLoggedIn(); manageOauth()">
     <!--upload popup-->
     <dialog id="uploadPopup" class="">
         <form action="javascript:void(0)" method="post" enctype="multipart/form-data" id="uploadForm" class="needs-validation">
@@ -97,12 +97,12 @@
             <input class="form-control" id="password" name="password" type="password" placeholder="Jelszó">
            
         </form>
+        <p role="button" href="" class="text-center mx-auto text-decoration-underline" onclick="loginGithub()">Folytatás GitHub-bal</p>
         <br>
         <label class="btn btn-danger" onclick="closeLoginPopup()">Mégse</label>
         <label class="btn btn-success" onclick="login()">Bejelentkezés</label>
     
     </dialog>
-
 
     <br>
     <div class="container w-100">

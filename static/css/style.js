@@ -249,8 +249,6 @@ function edit(){
         return
     }
 
-
-
     editProgress = document.getElementById('editProgress')
 
     fileSelector = document.getElementById("efile").files
@@ -388,6 +386,33 @@ function login(){
             generateTable()
         }
     })
+}
+
+function manageOauth(){
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    if (urlParams.get('gitcode') != undefined){
+        fetch(`https://petokrisa.hu/api/users/oauth2/github/login?code=${urlParams.get('gitcode')}`)
+        .then(d=>d.json())
+        .then(r=>{
+            localStorage.login = 'true'
+            localStorage.token = r['token']
+            localStorage.role = r['role']
+            localStorage.username = r['username']
+            localStorage.id = r['id']
+
+            closeLoginPopup()
+            isLoggedIn()
+            generateTable()
+            window.history.replaceState({}, document.title, "/");
+
+        })
+    }
+}
+
+function loginGithub(){
+    window.location = ('https://github.com/login/oauth/authorize?client_id=6389747b48199e71b803&scope=read:user')
+    sio.emit("oauth", "github")
 }
 
 function logout(){

@@ -1,5 +1,8 @@
+from app_config import app_config
+import ssl
 import os
 import shutil
+import requests
 #from io import BytesIO
 import flask
 import hashlib
@@ -11,7 +14,7 @@ import time
 from random import randint
 import json
 import gevent
-import geventwebsocket
+import eventlet
 import flask_socketio
 #import flask_admin
 #from flask_admin.contrib.sqla import ModelView
@@ -42,14 +45,14 @@ def role(_userToken, _postId, _roles):
         return None
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'KutyaFasz123'
+app.config['SECRET_KEY'] = app_config.Security.secret_key
 app.config['UPLOAD_FOLDER'] = './static/uploads'
 app.permanent_session_lifetime = timedelta(days=1)
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///restapi.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = app_config.Security.database
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JSON_AS_ASCII'] = False
 
-socketio = flask_socketio.SocketIO(app, async_mode='gevent')
+socketio = flask_socketio.SocketIO(app, async_mode='eventlet')
 
 db = SQLAlchemy(app)
 #databases
@@ -343,6 +346,33 @@ def apiPostsEdit():
     socketio.emit('update')
     return redirect('/')
 
+#git callback
+@app.route('/api/users/oauth2/github/login')
+def apiUserOauth2GithubLogin():
+    code = request.args['code']
+    client_id = app_config.Security.github_client_id
+    client_secret = app_config.Security.github_client_secret
+    r = requests.post(f"https://github.com/login/oauth/access_token?client_id={client_id}&client_secret={client_secret}&code={code}", headers={
+        "Accept": "application/json"
+    })
+    access_token = r.json()['access_token']
+    getUserData = requests.get("https://api.github.com/user", headers={
+        "Authorization": f"Bearer {access_token}",
+        "Accept": "application/json"
+    })
+    user = Users.query.filter(Users.password == '', Users.username == getUserData.json()['id']).first()
+    if user == None:
+        db.session.add(Users(username=getUserData.json()['id'], token=str(uuid4()), password='', role='user'))
+        db.session.commit()
+        user = Users.query.filter(Users.password == '', Users.username == getUserData.json()['id']).first()
+    return Response(response=json.dumps(dict(token=user.token, role=user.role, username=getUserData.json()['login'], id=user.id, status=200)), status=200, mimetype='application/json')
+
+
+@app.route('/api/users/oauth2/github')
+def apiUserOauth2Github():
+    code = request.args['code']
+    
+    return redirect(f'/?gitcode={code}')
 
 
 #pages
@@ -357,5 +387,10 @@ def handle_context():
 with app.app_context():
     if __name__ == '__main__':
         db.create_all()
-        #app.run(host='0.0.0.0', port=6969, debug=True)
-        socketio.run(app, host='0.0.0.0', port=80)
+        if app_config.Server.debug:
+            app.run(host=app_config.Server.host, port=app_config.Server.debug_port, debug=True)
+            
+        if app_config.Security.use_ssl:
+            socketio.run(app, host=app_config.Server.host, port=app_config.Server.port, certfile=app_config.Security.ssl_cert, keyfile=app_config.Security.ssl_key)
+        else:
+            socketio.run(app, host=app_config.Server.host, port=app_config.Server.port)

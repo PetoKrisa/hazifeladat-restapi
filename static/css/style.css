@@ -243,6 +243,11 @@ progress{
     display: inline;
 }
 
+.text-center{
+    text-align: center !important;
+    margin: auto !important;
+}
+
 @media (max-width: 500px){
     .container{
         width:  99% !important;
