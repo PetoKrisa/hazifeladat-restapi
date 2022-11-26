@@ -73,6 +73,8 @@ class Users(db.Model):
     password = db.Column(db.String, nullable=False)
     role = db.Column(db.String)
     posts = db.relationship('Posts', backref='users')
+    oauth = db.Column(db.String(255), nullable=True, default=None)
+    
 
     def __repr__(self):
         return f'{self.id}, {self.username}'
@@ -139,7 +141,7 @@ def apiUsersLogin():
         user = Users.query.filter(Users.password == hashPassword, Users.username == username).first()
         
         try:
-            return Response(response=json.dumps(dict(token=user.token, role=user.role, username=user.username, id=user.id, status=200)), status=200, mimetype='application/json')
+            return Response(response=json.dumps(dict(token=user.token, role=user.role, username=user.username, id=user.id, oauth=user.oauth, status=200)), status=200, mimetype='application/json')
         except:
             return Response(response=json.dumps(dict(status=404)), status=404, mimetype='application/json')
 
@@ -149,7 +151,7 @@ def apiUsers():
     usersQuery = Users.query.all()
     for user in usersQuery:
         try:
-            usersDict['users'].append(dict(id=user.id, username=user.username, role=user.role))
+            usersDict['users'].append(dict(id=user.id, username=user.username, role=user.role,  oauth=user.oauth))
         except:
             pass
             
@@ -161,7 +163,7 @@ def apiUsersId(id):
     usersDict = {'status':0, 'user': []}
     user = Users.query.filter(Users.id == id).first()
     try:
-        usersDict['user'] = dict(id=user.id, username=user.username, role=user.role)
+        usersDict['user'] = dict(id=user.id, username=user.username, role=user.role,  oauth=user.oauth)
     except:
         pass
             
@@ -360,12 +362,12 @@ def apiUserOauth2GithubLogin():
         "Authorization": f"Bearer {access_token}",
         "Accept": "application/json"
     })
-    user = Users.query.filter(Users.password == getUserData.json()['id']).first()
+    user = Users.query.filter(Users.password == getUserData.json()['id'], Users.oauth=="github").first()
     if user == None:
-        db.session.add(Users(username=getUserData.json()['login'], token=str(uuid4()), password=getUserData.json()['id'], role='user'))
+        db.session.add(Users(username=getUserData.json()['login'], token=str(uuid4()), oauth='github', password=getUserData.json()['id'], role='user'))
         db.session.commit()
         user = Users.query.filter(Users.password == getUserData.json()['id']).first()
-    return Response(response=json.dumps(dict(token=user.token, role=user.role, username=user.username, id=user.id, status=200)), status=200, mimetype='application/json')
+    return Response(response=json.dumps(dict(token=user.token, role=user.role, username=user.username, id=user.id, oauth=user.oauth, status=200)), status=200, mimetype='application/json')
 
 
 @app.route('/api/users/oauth2/github')
